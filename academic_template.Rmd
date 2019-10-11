@@ -1,0 +1,49 @@
+---
+title: Title
+author:
+  - Richard Paquin Morel
+  - University of Pittsburgh
+output:
+  word_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 8
+bibliography: bib/aefp_bib.bib
+csl: bib/apa.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Title
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse fermentum elit at nulla bibendum vulputate. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos [@andrewsSocialMovementsPolicy2001]. Morbi viverra felis ut libero suscipit suscipit. Ut vulputate dapibus mi, iaculis venenatis lacus fermentum ac. Quisque mi elit, mollis quis interdum sed, malesuada et lectus. Maecenas viverra sollicitudin nibh, non tempus nunc ultricies a. Quisque dignissim, enim nec consectetur venenatis, mauris orci semper massa, id fringilla erat ligula sed leo. Proin vehicula venenatis turpis, quis mattis quam feugiat non.
+
+Morbi sagittis at sem eu vestibulum. Aliquam [-@enosWhatDemolitionPublic2015] hendrerit bibendum erat at ultricies. In euismod aliquet posuere. Vestibulum accumsan consequat nisl, congue cursus est laoreet eget. Nullam in dictum sapien. Duis euismod consequat tellus vel laoreet. Mauris consectetur erat nunc, non lacinia nisi mollis eget. Proin sodales ut tellus blandit facilisis. Sed sagittis, ante sed luctus ullamcorper, eros mauris vulputate magna, nec finibus massa ex in lorem. Phasellus suscipit tempus tellus, ut finibus lacus lacinia a. Nulla facilisi. Suspendisse elementum sit amet eros viverra suscipit. Donec eleifend lorem nec est malesuada dignissim. 
+
+## Heading
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ullamcorper hendrerit nunc, sit amet vestibulum turpis euismod quis. Proin elit magna, condimentum sit amet risus ut, vehicula venenatis dui. In semper turpis mi, feugiat viverra tellus dignissim vel. Nunc eget odio nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nullam molestie, massa eu vulputate mattis, erat leo molestie neque, at gravida elit odio sed lorem. Praesent nec massa blandit tellus finibus dapibus. In a placerat risus. Donec id nulla imperdiet, gravida diam vitae, cursus nisl. Nam sodales justo massa, quis pretium tortor blandit suscipit. Nullam a tempor nunc, vitae suscipit neque. Nunc luctus vulputate vehicula. Aliquam ut ornare sapien, nec laoreet mi. Phasellus gravida arcu vel viverra scelerisque. Cras consequat maximus nibh nec sodales.
+
+```{r pressure, echo=FALSE, fig.cap="Figure 1. Pressure"}
+plot(pressure)
+```
+
+### Subheading
+
+Donec malesuada ut augue ac efficitur. Vivamus molestie interdum faucibus. Vivamus volutpat urna justo, vel interdum urna hendrerit ac. Donec neque libero, egestas nec luctus euismod, iaculis ut felis. Fusce at ex felis. In hac habitasse platea dictumst. Pellentesque id neque scelerisque, vehicula ligula pharetra, posuere sapien.
+
+Duis tellus purus, dapibus in lacinia a, commodo et ipsum. Suspendisse vel rhoncus libero, non auctor sapien. Phasellus in gravida lacus. Nulla vehicula nibh a sem egestas sodales. Phasellus nec dui lobortis eros molestie pharetra nec ut quam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam aliquam in neque ut lacinia.
+
+>Curabitur semper enim eu lacinia malesuada. Proin vitae lacus laoreet, auctor turpis a, lacinia nisl. Etiam vel metus molestie, dignissim mi eu, laoreet tellus. Cras nulla est, imperdiet a iaculis nec, fermentum ut ex. Duis et nunc eu elit mattis fermentum vitae in velit. Nunc mattis ipsum eu porttitor rutrum. Vivamus porta tortor non eleifend semper. 
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed molestie mollis neque, tempus feugiat dolor iaculis quis. Mauris eget urna nec nisl auctor feugiat at et dui. Nullam a dolor eu sapien tincidunt tincidunt in ut dolor. Maecenas egestas sem tristique ex faucibus lobortis. Integer imperdiet elementum nisl, in commodo turpis bibendum quis. Suspendisse quis sem eros. Sed ullamcorper risus ut enim pharetra laoreet at auctor sapien. Nam a rutrum mi. Ut ante nulla, pharetra in quam a, ultrices aliquet elit. Sed ut nunc quam.
+
+Sed suscipit, mi sit amet semper blandit, mi urna ultricies lacus, et tristique urna turpis eu odio. Duis in rutrum dolor. Aenean sit amet ultrices urna. Mauris nisl ex, tincidunt at purus in, mattis aliquet nisl. Fusce id efficitur neque, a dignissim est. Proin massa nisl, feugiat a lorem ut, ultricies varius magna. Nullam et fermentum sem. 
+
+```{r pressure2, echo=FALSE, fig.cap="Figure 2. Pressure again"}
+plot(pressure)
+```
+
+# References
