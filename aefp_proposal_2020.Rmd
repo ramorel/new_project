@@ -124,8 +124,7 @@ tab <-
     ) %>% 
   set_caption("Table 1. Estimates of the Effects of Proximate and Direct Threat on Share of Charter Schools in a District") %>% 
   insert_row(c("District Fixed Effect", "", "", "X", "X"), after = 8) %>% 
-  insert_row(c("Year Fixed Effect", "", "", "", "X"), after = 9) %>% 
-  theme_article() %>% 
+  insert_row(c("Year Fixed Effect", "", "", "", "X"), after = 9) %>%
   as_flextable()
   
 tab
