@@ -23,7 +23,7 @@ for (i in seq(urls)) {
     unzip(temp) %>%
     str_subset(".shp") %>%
     read_sf() %>%
-    filter_at(vars(contains("STATEFP")), ~ . %in% c("04", "06", "13", "48"))
+    filter_at(vars(contains("STATEFP")), ~ . %in% c("04", "08", "06", "12", "49"))
   unlink(temp)
 }
 

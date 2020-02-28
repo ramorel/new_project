@@ -1,0 +1,129 @@
+---
+title: Racial Competition and Charter School Expansion in California
+author:
+  - Richard Paquin Morel
+  - Postdoctoral Research Associate
+  - University of Pittsburgh
+  - richard.morel@pitt.edu
+output:
+  word_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 8
+    reference_docx: bib/academic_template.docx
+bibliography: bib/aefp_bib.bib
+csl: bib/apa.csl
+---
+
+1. Introduction
+  - Disparities and school choice policies
+  - Advantaged parents exploit choice systems
+  - Demographic changes -- shifting demographic make up of school districts
+
+1. Introduction - Disparities framing
+
+Concerns over persistent race and class disparities in academic performance and access to educational opportunities have lead policymakers to adopt an array of school choice policies. Advantaged families have long exercised _de facto_ choice by selecting into nieghborhoods within high-quality school zones or by selecting into private schools when public school options are not satisfactory [@holmeBuyingHomesBuying2002; @saporitoPrivateChoicesPublic2003]. School choice policies decouple residence from school assignment, ideally permitting families to select into high-performing or better fitting schools without needing to move residences. Researchers have devoted a great deal of effort to determining whether school choice options--vouchers, charter schools, open enrollment plans--produce better outcomes for disadvantaged students (e.g.,...). There is increasing attention to other dimensions of schools of choice beyond academic performance, including the extent to which they may exacerbate or mitigate school segregation, their competitive effects on traditional schools, their instructional and disciplinary practices, and their long-term impacts on life outcomes. 
+
+Apart from the effects of school choice policy on academic outcomes, there is growing interest in understanding the extent to which choice policies may contribute to racial segregation in schools. 
+
+  - Concerns over persistent race and class disparities in academic performance and in access to educational resources and opportunities
+  - School choice policies promoted as a means to expand opportunity and reduce gaps
+    - Much emphasis on whether school choice policies produce better outcomes for disadvantaged students
+    - But increasing focus on how school choice policies impact things like segragation, school discipline, student identity, competitive effects on traditional schools, etc
+  - Aside from this, existing research also suggests that such policies are often exploited by well-resources families, who can navigate choice systems, access info, etc. In addition, such policies may allow white families to avoid attending schools for a large proportion of students of color.
+  - While the existing research suggests that advantaged families are able to exploit within-district choice systems, there is unclear evidence regarding charter schools
+  - Here's some nice language for the instroduction: This study draws on an X year panel of data to re-examine factors contributing to the founding of charter schools in affluent white areas and the white enrollment in charter schools. 
+
+## Theoretical background: Choice, threat, and the reproduction of educational inequalities
+
+While several theories of action motivate the use of school choice policy, notable among them is that these policies increase educational opportunity for marginalized students. Historical patterns of residential segregation and racialized policymaking have locked marginalized students into poorly resourced areas and thus, given the coupling of residence and school attendence, into poorly resourced schools. School choice decouples residence from school attendance, allowing families to leave poor performing schools and select into better ones. Charter schools, as a particular form of school choice, add to this the notion that the administrative bureaucracy of schools--state and district regulations, local school boards, unions--renders them unable to respond to the need of marginalized students. 
+
+Common to all forms of school choice policy is the assumption that parents will use information about school performance to make rational choices about which school to send their children to.
+
+  - Theory of action informing school choice policies...
+  - Advantaged families have resources to that allow them to more easily navigate school choice systems -- test prep, school visits, application processes, etc.
+  - Processes of school segregation
+    - Residential choice
+    - Redlining and other policies
+    - School choice
+  - Racial threat and reactionary behavior
+
+## Data and methods  
+
+### Data  
+Data for this study covers from the 2000-2001 to the 2015-2016 school year.
+I chose this timeframe for two key reasons. 
+First, this was the period for each data were available from each of my data sources.
+Second, Califorina passed its charter school law in 1995, but...
+I collected data from five sources.
+First, I collected administrative and demographic for all public schools and school districts in California from the National Center for Education Statistics's (NCES) Common Core of Data. 
+The Common Core of Data collects basic administrative and demographic data for the universe of public schools and school district in the country, including charter schools. 
+I accessed the CCD via the Urban Institute's Application Program Interface (API) via the `educationdata` package for the R programming language [@ueyamaEducationdataLoadData2019]. 
+The CCD does not report enrollment separately for charter and traditional public schools at the district-level, which is the level of unit of analysis for this study.
+Therefore to find district-level charter school enrollment, I used school-level enrollment data and aggregated to the district.
+For other district-level administrative data, I used the district-level data provided by the CCD.
+Importantly, the enrollment and administrative data come from two different datasets using two slightly different data collection processes and reporting rules, some of which have implications for missing data in the study.
+
+Second, I accessed geographic data on school district boundaries from the NCES's Education Demographic and Geographic Estimates database.
+These data contain shapefiles defining the cachement boundary for every school district in the country. 
+I used these data to determine sets of neighboring districts for  each year of study.
+
+Third, I collected district-level income data from the US Census' Small Area Income and Poverty Estimates, again access through the API provided by the Urban Institute.
+Fourth, I collected additional demographic data for school district from the US Census' American Communities Survey, access through the `tidycensus` R package [@walkerTidycensusLoadUS2019].
+Finally, I collected district-level achievement data in English Language Arts and mathematics from the EdFacts, again accessed through the `educationdata` package.
+
+_Outcome_  
+I analyze two main outcomes of interest: the share of charter schools in a district and the share of white students in a district enrolled in charter schools.
+The CCD contains school-level demographic enrollment data for both traditional public schools and charter schools. For the share of charter schools in a district, I simply divided the number of charter schools by the total number of school for each district for each year in the dataset.
+For the share of white students enrolled in charter schools, I found the number of white students enrolled in each charter school in a district and aggregated this to the district-level.
+I then divided this sum by the total enrollment for the district.
+
+
+_Measuring spatial threat_  
+I measure racial threat in two ways. 
+First, I measure _proximal_ spatial threat as the product of the proportion of majority group members in the focal district and the proportion of the marginalized group members in bordering districts [@andrewsGroupThreatPolicy2015; @cunninghamContextsMobilizationSpatial2007]. 
+As a share, the measure ranges from 0 (no threat) to 1 (greatest threat). 
+Formally:
+
+$$Threat_{ij} = \theta_{ij} * \gamma_{ij}$$
+
+where 
+
+$$\theta_{ij} = \frac{White_j}{Total_j}$$
+
+and
+
+$$\gamma_{ij} = \frac{\sum_1^k Blk_{kj}, Hisp_{kj}}{\sum_1^k Total_{kj}}$$
+
+$i$ indexes school districts, $j$ indexes years and $k$ indexes districts that share a border with district $i$. 
+The proximal status threat that parents in district $i$ are exposed to in year $j$ is a function of proportion of the majority (White) students _within_ in the district ($\theta$) and the proportion of marginalized (Black and/or Hispanic) students in neighboring districts ($\gamma$). 
+
+To determine $\theta$ for a given district $i$, I aggregated school enrollment data to the district level and find the proportion of Hispanic or Black students of the total enrollment in the district.
+To determine $\gamma$ for district $i$, I first accessed district boundary data from the EDGE database. 
+I considered any district a neighbor of district $i$ if their borders touch at any point.
+District boundaries change, so the set of districts that neighbor district $i$ may vary year-to-year, but this is relatively infrequent.
+The "threatening" population represented by $\gamma$ is the proprotion of marginalized students in set of districts that border district $i$.
+
+Second, to measure direct threat, I use the simple proportion of marginalized (Black and/or Hispanic) students enrolled in traditional public schools in the district. 
+Again, I used school-level enrollment data for traditional public school made available by the CCD and aggregated to the district-level.
+
+_Control variables_  
+For each analysis, I controlled for time-varying district-level covariates. I included X categories of control variables. First, I controlled for a set of district-level school finance data: the natural log of district revenue and district spending, and per-pupil spending. Second, I included a set of district-level demographic data 
+
+### Analytic approach  
+
+To model the relationship between charter school enrollment and spatial threat, I use a fixed effects model, the generic form of which is:
+
+$$ Y_{ij} = \beta_1Threat_{ij} + \beta_3 Trad_{ij} + X_{it}\beta + \alpha_i + \gamma_j + \epsilon_{ij} $$
+
+where $Y_{ij}$ represents the (1) the share of charter schools in a district or (2) the share of white students enrolled in charter schools. 
+$X_{it}\beta$ is a vector of time-varying district-level covariates. 
+The parameters $\alpha_i$ and $\gamma_i$ capture district and year fixed effects.
+To assess proximal exposure, I use the proximal threat measure described in Formula 1. 
+To assess, direct exposure I use the share of black and Hispanic students enrolled in traditional public schools.
+I estimate models for the proximal and direct exposure measures separately first and then jointly.
+I also estimate models for Black and Hispanic exposure separately and jointly.
+I also test an interaction effect between proximal and direct exposure.
+
+## Results
+

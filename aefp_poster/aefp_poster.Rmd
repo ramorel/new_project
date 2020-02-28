@@ -1,0 +1,93 @@
+---
+title: Status Anxiety and Charter School Expansion in California
+author:
+  - name: Richard Paquin Morel
+    affil: 1
+affiliation:
+  - num: 1
+    address: Learning Research and Development Center, University of Pittsburgh
+column_numbers: 3
+logoleft_name: /Users/richardmorel/Documents/GitHub/new_project/aefp_poster/RGB_Shield_Stacked_Education_3color.png 
+output: 
+  posterdown::posterdown_html:
+    self_contained: false
+    keep_md: true
+    css: /Users/richardmorel/Documents/GitHub/new_project/aefp_poster/pitt_colors.css
+bibliography: packages.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Overview
+
+While school choice policies are now ubiqitous are often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation. Using a group threat/status anxiety framework, I hypothesize that increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal status threat, where racial diversification occurs in neighboring school districts, and direct status threat, where racial diversification occurs within local traditional public schools. I find evidence that both proximal and direct threat are associated with both increased foundings of charter schools and with white enrollment in charter schools. [IMPLICATIONS]
+
+
+# Data Methods
+
+**Data**
+
+Panel of California school district data from 2000-2015. Sources:
+
+- District enrollment and finance data: The Common Core of Data (accessed via the Urban Institutes API) 
+- District poverty data: Small Area Income and Poverty Estimates (accessed via the Urban Institutes API) 
+- District geographic boundaries: The NCES EDGE database
+
+**Proximal status threat**
+
+$$ProxThreat_{ij} = \theta_{ij} * \gamma_{ij}$$
+where $\theta_{ij} = \frac{White_{ij}}{Total_{ij}}$ and $\gamma_{ij} = \frac{\sum_1^k Blk_{kj}, Hisp_{kj}}{\sum_1^k Total_{kj}}$
+
+**Direct status threat**
+
+$$DirThreat_{ij} = \frac{BlkTPS{ij}, HispTPS{ij}}{Total_{ij}}$$
+$i$ indexes districts, $j$ indexes years, and $k$ indexes districts that neighbor $i$
+
+**Analytic model: Fixed Effects Regression**
+
+$$ Y_{ij} = \beta_1ProxThreat_{ij} + \beta_2DirThreat_{ij} + X_{it}\beta + \alpha_i + \gamma_j + \epsilon_{ij} $$
+
+
+# Results
+
+Usually you want to have a nice table displaying some important results that you have calculated. In `posterdown` this is as easy as using the `kable` table formatting you are probably use to as per typical R Markdown formatting.
+
+You can reference tables like so: Table \@ref(tab:mytable). Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam placerat augue at velit tincidunt semper. Donec elementum porta posuere. Nullam interdum, odio at tincidunt feugiat, turpis nisi blandit eros, eu posuere risus felis non quam. Nam eget lorem odio. Duis et aliquet orci. Phasellus nec viverra est.
+
+```{r mytable, out.width='80%'}
+knitr::kable(iris[1:10, 1:4], caption = 'Table caption.',align = 'c',"html")
+```
+
+Or with figures: Figure \@ref(fig:standard-plot), or Figure \@ref(fig:morefigs).
+
+```{r standard-plot, out.width='80%', fig.align='center', fig.cap='Great figure!', fig.height=5}
+plot(mtcars[1:2])
+```
+
+```{r morefigs, out.width='80%', echo=TRUE, fig.cap='Amazing, right?!', fig.height=5}
+data <- iris
+
+plot(x = data$Sepal.Length, 
+     y = data$Sepal.Width, 
+     col = data$Species,
+     pch = 19, 
+     xlab = "Sepal Length (cm)",
+     ylab = "Sepal Width (cm)")
+
+```
+
+# Next Steps
+
+Aliquam sed faucibus risus, quis efficitur erat. Vestibulum semper mauris quis tempus eleifend. Aliquam sagittis dictum ipsum, quis viverra ligula eleifend ut. Curabitur sagittis vitae arcu eget faucibus. In non elementum felis. Duis et aliquam nunc. Nunc pulvinar sapien nunc, vel pretium nisi efficitur in. Fusce fringilla maximus leo et maximus. Fusce at ligula laoreet, iaculis mi at, auctor odio. Praesent sed elementum justo. Aenean consectetur risus rhoncus tincidunt efficitur. Praesent dictum mauris at diam maximus maximus [@R-posterdown].
+
+# Conclusion
+
+Try `posterdown` out! Hopefully you like it!
+
+```{r, include=FALSE}
+knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown'), 'packages.bib')
+```
+
+# References

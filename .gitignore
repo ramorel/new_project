@@ -1,5 +1,15 @@
 .Rproj.user
 .Rhistory
-.RData
+*.RData
 .Ruserdata
 *.Rproj
+*.csv
+*.html
+*.doc*
+*.png
+*.gif
+*.xlsx
+*.pdf
+*.icloud
+EDGE_SCHOOLDISTRICT_TL16_SY1516
+shapefiles

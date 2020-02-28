@@ -23,30 +23,32 @@ library(huxtable)
 library(broom)
 ```
 
-Charter schools are among the most controversial of education policies in recent decades, with debates in the academic and popular literatures on their effectiveness and fairness. Much of this literature concerns whether charter schools exhibit better performance that traditional public schools--especially for underserved groups such as low-income students and students of color. There is also a growing literature concerning the extent to which charter schools contribute to racial segregation, siphon funding from traditional public schools, and expose students to different regimes of instruction or discipline. Taken as a whole, there is conflicting findings and charter schools are a heterogenous group, making broad claims problematic and untenable.
+While charter schools are often positioned as a means to reduce the opportunity gap between students of color and their white peers, they may  contribute to increasing racial segregation [@bifulcoSchoolChoiceRacial2007; @frankenbergNotJustUrban2012; @garciaImpactSchoolChoice2008; @rodaSchoolChoicePolicies2013] or expose students to different regimes of instruction or discipline [@golannParadoxSuccessNoexcuses2015]. Research also suggests that advantaged families often use choice to their own advantage [@lauenChooseNotChoose2009]. To what extent does this occur with charter schools? Existing reseach is limited, with conflicting findings [@renzulliSchoolChoiceCharter2005; @rappDispellingMythWhite2007], due to theoretical and methodological issues. 
 
-Regardless of debate, charter schools, and school choice policies more broadly, are often presented as a means to reduce the opportunity gap in education between students of color and their white peers. Along with this, much of the literature focuses charter schools in urban areas, serving predominately students of color. Researchers have given less attention to charter schools in predominately white, affluent areas. However, the literature on school choice provides evidence that advantaged families often use choice to their own advantage, undermining the rationale behind the policy [@lauenChooseNotChoose2009]. Apart from _de facto_ choice exercised by parents who have the means to choose between charter and public schools, white and middle-class families also exploit _de jure_ choice policies to their advantage, potentially mitigating the power of choice policies to reduce gaps in performance between white students and their non-white peers .
-
-It is unclear to what extent this extends to charter schools, in part because we have little sense of the conditions under which charter schools are opened in white and affluent areas and due to conflicting findings in the existing research. Existing reseach is limited, but some have found that racial threat/competition is associated with white enrollment in charter schools [@renzulliSchoolChoiceCharter2005], while others have concluded that charter schools are not contributing to "white flight" from public schools [@rappDispellingMythWhite2007]. Reasons for such conflicting findings include theoretical and methodological issues. To address such shortcomings, I develop a conceptual framework, based on racial threat and competition literature, to hypothesize conditions under which advantaged families may migrate to charter schools. Racial competition theory predicts that white communities experience increases in the share of other racial groups, with proximally or directly, they exhibit reactionary behaviors in order to protect control over social, political, and economic resources. In addition, I leverage a panel of data spanning nearly two decades and fixed effects models to account for unobserved, non-time-varying differences between school districts. I bolster my interpretation of the findings using placebo tests (of different outcome variables) and by addressing alternative explanations.
+To address limitations in the literature, I develop a conceptual framework, based on racial competition theory, to hypothesize that advantaged families may migrate to charter schools when exposed, proximally or directly, to members of non-dominant racial groups. The theory predicts that, under such conditions, members of white communities exhibit reactionary behaviors in order to protect control over social, political, and economic resources [@blalockTheoryMinorityGroup1967; @blumerRacePrejudiceSense1958; @boboPrejudiceGroupPosition1999; @oliverParadoxesIntegrationRace2010]. I test both a proximal threat hypothesis--increases in the share of non-whites in neighboring communities--and a direct threat hypothesis--increases in the share of non-whites within schools. In addition, I leverage a panel of data spanning nearly two decades and fixed-effects models to account for unobserved, non-time-varying differences between school districts.
 
 ## Data and Methods
 
-I complied a panel of demographic, achievement, and finance data for all schools and districts in California from 2000-2016. These data were accessed through the Urban Institute's Education Data Portal's application programming interface. I accessed district geographic data from the National Center for Education Statistics' Education Demographic and Geographic Estimates database. I subset the panel to include only majority white districts, since this is the population of interest. I considered a district major white if its mean share of white students across all years was in the fourth or fifth quantile for all districts in the state. The resulting dataset has 8144 district-year observations and 448 unique school districts. The 
+I complied a panel of demographic, achievement, geographic, and finance data for all schools and districts in California from 2000-2016. These data were accessed through the Urban Institute’s Education Data Portal’s application programming interface and from the National Center for Education Statistics. I subset the panel to include only majority white districts, defined as those with a mean share of white students across all years in the fourth or fifth quantile for all districts. The resulting dataset has 8144 district-year observations and 448 unique school districts.
 
-My main independent variables of interest are the share of black and Hispanic students enrolled in traditional public school and a variable proxying the "threat" a district is exposed to. The threat variable is constructed following Cunningham and Pillips [-@cunninghamContextsMobilizationSpatial2007] and Andrews and Seguin [-@andrewsGroupThreatPolicy2015]:
+My main independent variables of interest are proxies for the proximal threat hypothesis and the direct threat hypothesis. To proxy proximal threat, I construct a “threat” variable [@andrewsGroupThreatPolicy2015; @cunninghamContextsMobilizationSpatial2007] that measures the extent to which members of dominant group face a proximal exposure to minority groups:
 
 $$ Threat_{ij} = Threatened_{ij} * Threatening_{kj}$$
-where _i_ indexes school districts, _j_ indexes years and _k_ indexes districts that share a border with district _i_. The status threat that district _i_ is exposed to in year _j_ is a function of share of the threatened population _within_ in the district (here, white families) and the share of threatening populations in neighboring districts (here, black and Hispanic families).
+where _i_ indexes school districts, _j_ indexes years and _k_ indexes districts that share a border with district _i_. The status threat that parents in district _i_ are exposed to in year _j_ is a function of share of the threatened population _within_ in the district (here, white families) and the share of threatening populations in neighboring districts (here, black and Hispanic families).
 
-The main specification I use is a district-year fixed effects model:
+The main specification I use is a district and year fixed-effects model:
 
-$$ Y_{ij} = \beta_1Threat_{ij} + \beta_2Hisp_{trad} + \beta_3Blk_{trad} + \beta_4White_{trad} + X_{it}\beta + \alpha_i + \gamma_j + \epsilon_{ij} $$
+$$ Y_{ij} = \beta_1Threat_{ij} + \beta_2Hisp_{trad} + \beta_3Blk_{trad} + X_{it}\beta + \alpha_i + \gamma_j + \epsilon_{ij} $$
 
-where $Y_{ij}$ represents the (1) the share of charter schools in a district or (2) the share of white students enrolled in charter schools in a district.
+where $Y_{ij}$ represents the (1) the share of charter schools in a district or (2) the share of white students enrolled in charter schools. I test a direct threat hypothesis by including the share of black and Hispanic students in traditional public schools and a proximal threat hypothesis by includeing the _threat_ variable. A vector of district-level time-varying controls are included (noted in the tables below).
 
 ## Preliminary Results
 
-Based on the fixed effects regression results, I find support for both the proximal threat hypothesis and the direct contact hypothesis. There is a strong association between the threat a district faces and its share of charters. As threat increases, the share of charter schools in a district increases. There is also a strong association between the share of Hispanic students in traditional public schools and the share of charter schools in a district (Table 1). 
+There is a strong association between the proximal and direct threat a district faces and its share of charters (Table 1) and white enrollment in charters (Table 2). As Table 3 shows, it is threat associated with increasing Hispanic populations in proximate districts that is driving the results in Tables 1 and 2. As a placebo test, I specified models with the share of Hispanic and Black students enrolled in charter schools. Threat should not impact whether or not these populations enroll in charter schools. Table 4 shows the results for these models, with threat showing no effect on enrollment for these groups.
+
+## Significance
+
+I find that threat, conceptualized both proximally and directly, contributes to both (1) charter schools open in predominately white areas and (2) white students enroll in charter schools. This finding extends our understanding of the role of charter schools in racial segregation, showing that families in predominately white areas may use charter schools to "escape" increasing diversity in traditional public schools. This is furtherevidence that charter schools may contribute to "white flight" from traditional public schools [@renzulliSchoolChoiceCharter2005]. As patterns of migration shift and suburban areas grow more diverse, advantaged families may seek out ways to exploit policies in order to maintain control over educational opportunities and resources.
 
 ```{r tab1}
 load("ca_charter_analysis.RData")
@@ -117,21 +119,27 @@ tab <-
     coefs = 
       c(
         "Overall Threat" = "threat_overall",
-        "%Hispanic students in traditional schools"= "prop_hispanic_traditional",
-        "%Black students in traditional schools" = "prop_black_traditional"
+        "%Hispanic students (TPS)"= "prop_hispanic_traditional",
+        "%Black students (TPS)" = "prop_black_traditional"
       ),
-    note = "{stars}. Includes controls for district segregation, the share of white students in the district, logged district enrollment, a lag for the share of district funding from local source and from property taxes, and lagged per pupil spending. Standard errors clustered at the district level"
+    note = "{stars}. Includes controls for district segregation, the share of white students in the district, logged district enrollment, a lag for the share of district funding from local source and from property taxes, and lagged per pupil spending. Standard errors clustered at the district level. TPS = Traditional public schools."
     ) %>% 
-  set_caption("Table 1. Estimates of the Effects of Proximate and Direct Threat on Share of Charter Schools in a District") %>% 
-  insert_row(c("District Fixed Effect", "", "", "X", "X"), after = 8) %>% 
-  insert_row(c("Year Fixed Effect", "", "", "", "X"), after = 9) %>%
-  as_flextable()
+  insert_row(c("Proximal threat", rep("", 4)), after = 1) %>% 
+  insert_row(c("Direct threat", rep("", 4)), after = 4) %>% 
+  insert_row(c("District Fixed Effect", "", "", "X", "X"), after = 9) %>% 
+  insert_row(c("Year Fixed Effect", "", "", "", "X"), after = 10) %>%
+  set_align(1:14, 1, "left") %>% 
+  set_align(1:14, 2:5, "center") %>% 
+  set_bottom_border(c(2, 10, 11), 1:5, 0) %>% 
+  set_bold(c(2, 5), 1, TRUE) %>% 
+  as_flextable() %>% 
+  flextable::set_caption("Table 1. Estimates of the Effects of Proximate and Direct Threat on Share of Charter Schools in a District") %>% 
+  flextable::padding(i = 1:14, j = 1:5, padding = 0)
   
 tab
   
 ```
 
-Likewise, threat is also associated with the share of white enrollment in charter schools. Net of controls, as the threat increases, majority white districts have more white students enrolling in charter schools (Table 2).
 
 ```{r tab2}
 m1 <-
@@ -197,22 +205,27 @@ tab <-
     coefs = 
       c(
         "Overall Threat" = "threat_overall",
-        "%Hispanic students in traditional schools"= "prop_hispanic_traditional",
-        "%Black students in traditional schools" = "prop_black_traditional"
+        "%Hispanic students (TPS)"= "prop_hispanic_traditional",
+        "%Black students (TPS)" = "prop_black_traditional"
       ),
-    note = "{stars}. Includes controls for district segregation, the share of white students in the district, logged district enrollment, a lag for the share of district funding from local source and from property taxes, and lagged per pupil spending. Standard errors clustered at the district level"
+    note = "{stars}. Includes controls for district segregation, the share of white students in the district, logged district enrollment, a lag for the share of district funding from local source and from property taxes, and lagged per pupil spending. Standard errors clustered at the district level. TPS = traditional public schools."
     ) %>% 
-  set_caption("Table 2. Estimates of the Effects of Proximate and Direct General Threat on White Charter School Enrollment") %>% 
-  insert_row(c("District Fixed Effect", "", "", "X", "X"), after = 7) %>% 
-  insert_row(c("Year Fixed Effect", "", "", "", "X"), after = 8) %>% 
-  theme_article() %>% 
-  as_flextable()
+  insert_row(c("Proximal threat", rep("", 4)), after = 1) %>% 
+  insert_row(c("Direct threat", rep("", 4)), after = 4) %>% 
+  insert_row(c("District Fixed Effect", "", "", "X", "X"), after = 9) %>% 
+  insert_row(c("Year Fixed Effect", "", "", "", "X"), after = 10) %>%
+  set_align(1:14, 1, "left") %>% 
+  set_align(1:14, 2:5, "center") %>% 
+  set_bottom_border(c(2, 10, 11), 1:5, 0) %>% 
+  set_bold(c(2, 5), 1, TRUE) %>% 
+  as_flextable() %>% 
+  flextable::set_caption("Table 2. Estimates of the Effects of Proximate and Direct General Threat on White Charter School Enrollment") %>% 
+  flextable::padding(i = 1:14, j = 1:5, padding = 0)
   
 tab
   
 ```
 
-Table 3 shows results for a set of regressions that separate out threat originating from Black migration and Hispanic migration. As the table shows, it is threat associated with increasing Hispanic populations in proximate districts that is driving the results in Tables 1 and 2. 
 
 ```{r tab3}
 
@@ -256,21 +269,26 @@ tab <-
       c(
         "Hispanic threat" = "threat_hispanic", 
         "Black threat" = "threat_black",
-        "%Hispanic students in traditional schools"= "prop_hispanic_traditional",
-        "%Black students in traditional schools" = "prop_black_traditional"
+        "%Hispanic students (TPS)"= "prop_hispanic_traditional",
+        "%Black students (TPS)" = "prop_black_traditional"
       ),
-    note = "{stars}. Includes controls for district segregation, the share of white students in the district, logged district enrollment, a lag for the share of district funding from local source and from property taxes, and lagged per pupil spending. Standard errors clustered at the district level"
+    note = "{stars}. Includes controls for district segregation, the share of white students in the district, logged district enrollment, a lag for the share of district funding from local source and from property taxes, and lagged per pupil spending. Standard errors clustered at the district level. TPS = traditional public schools."
     ) %>% 
-  set_caption("Table 3. Estimates of the Effects of Proximate and Direct Specific Threat on Charter Founding and Enrollment") %>% 
-  insert_row(c("District Fixed Effect", "X", "X"), after = 8) %>% 
-  insert_row(c("Year Fixed Effect", "X", "X"), after = 9) %>% 
-  theme_article() %>% 
-  as_flextable()
+  insert_row(c("Proximal threat", rep("", 2)), after = 1) %>% 
+  insert_row(c("Direct threat", rep("", 2)), after = 6) %>% 
+  insert_row(c("District Fixed Effect", "X", "X"), after = 11) %>% 
+  insert_row(c("Year Fixed Effect", "X", "X"), after = 12) %>% 
+  set_bottom_border(c(2, 12, 13), 1:3, 0) %>% 
+  set_align(2, 1, "left") %>% 
+  set_align(1:16, 2:3, "center") %>% 
+  set_bold(c(2, 7), 1, TRUE) %>% 
+  as_flextable() %>% 
+  flextable::set_caption("Table 3. Estimates of the Effects of Proximate and Direct Specific Threat on Charter Founding and Enrollment") %>% 
+  flextable::padding(i = 1:16, j = 1:3, padding = 0)
   
 tab
 ```
 
-As a placebo test, I also specified models with the share of Hispanic and Black students enrolled in charter schools. According to theory, threat, as operationalized here, should not impact whether or not these populations enroll in charter schools. Table 4 shows the results for these models, with threat showing no effect on enrollment for these groups.
 
 ```{r tab4}
 m1 <-
@@ -309,21 +327,25 @@ tab <-
     coefs = 
       c(
         "Overall Threat" = "threat_overall",
-        "%Hispanic students in traditional schools"= "prop_hispanic_traditional",
-        "%Black students in traditional schools" = "prop_black_traditional"
+        "%Hispanic students (TPS)"= "prop_hispanic_traditional",
+        "%Black students (TPS)" = "prop_black_traditional"
       ),
-    note = "{stars}. Includes controls for district segregation, the share of white students in the district, logged district enrollment, a lag for the share of district funding from local source and from property taxes, and lagged per pupil spending. Standard errors clustered at the district level"
+    note = "{stars}. Includes controls for district segregation, the share of white students in the district, logged district enrollment, a lag for the share of district funding from local source and from property taxes, and lagged per pupil spending. Standard errors clustered at the district level. TPS = Traditional public schools."
     ) %>% 
-  set_caption("Table 2. Estimates of the Effects of Proximate and Direct General Threat on White Charter School Enrollment") %>% 
-  insert_row(c("District Fixed Effect", "X", "X"), after = 7) %>% 
-  insert_row(c("Year Fixed Effect", "X", "X"), after = 6) %>% 
-  theme_article() %>% 
-  as_flextable()
+  insert_row(c("Proximal threat", "", ""), after = 1) %>%
+  insert_row(c("Direct threat", "", ""), after = 4) %>%
+  insert_row(c("District Fixed Effect", "X", "X"), after = 9) %>% 
+  insert_row(c("Year Fixed Effect", "X", "X"), after = 10) %>% 
+  set_bottom_border(c(2, 10, 11), 1:3, 0) %>% 
+  set_align(2, 1, "left") %>% 
+  set_align(1:14, 2:3, "center") %>% 
+  set_bold(c(2, 5), 1, TRUE) %>% 
+  as_flextable() %>% 
+  flextable::set_caption("Table 4. Estimates of the Effects of Proximate and Direct Threat on Black and Hispanic Charter School Enrollment") %>%
+  flextable::padding(i = 1:14, j = 1:3, padding = 0)
   
 tab
 ```
 
-
-## Significance
 
 # References

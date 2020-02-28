@@ -1,0 +1,41 @@
+---
+title: "Outline: Racial Competition and Charter School Expansion in California"
+author:
+  - Richard Paquin Morel
+  - Postdoctoral Research Associate
+  - University of Pittsburgh
+  - richard.morel@pitt.edu
+output:
+  word_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 8
+    reference_docx: bib/academic_template.docx
+bibliography: bib/aefp_bib.bib
+csl: bib/apa.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+- Charter schools and school choice are intended to expanded access to educational opportunities and increase academic achievement for traditionally underserved groups by allowing them to...
+- But, advantaged families exploit choice policies
+- Charter schools in particular may serve as a way for privileged families to exit traditional public schools
+- In this study, 
+
+## Theoretical framework
+
+- Charter schools and the opportunity gaps
+
+- School choice and racial advantage
+
+## Data
+
+
+## Methods
+
+
+## Findings
