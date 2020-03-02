@@ -82,8 +82,8 @@ m1_controls <-
   felm(
     prop_charter ~
       threat_overall +
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
+      black_n_btw_prop_traditional +
+      hispanic_n_btw_prop_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -93,10 +93,10 @@ m1_controls <-
 
 m2_controls <- 
   felm(
-    prop_white_enroll_charter ~
+    white_n_within_prop_charter ~
       threat_overall +
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
+      black_n_btw_prop_traditional +
+      hispanic_n_btw_prop_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -112,8 +112,8 @@ tidy_models <-
   map2(mod_names, ~ mutate(.x, model = .y)) %>% 
   map(~ mutate(.x, term = case_when(
     term == "threat_overall" ~ "Overall proxmial threat",
-    term == "prop_black_enroll_traditional" ~ "%Black - TPS",
-    term == "prop_hispanic_enroll_traditional" ~ "%Hispanic - TPS",
+    term == "black_n_btw_prop_traditional" ~ "%Black - TPS",
+    term == "hispanic_n_btw_prop_traditional" ~ "%Hispanic - TPS",
   )))
 
 tidy_models %>% 
@@ -130,8 +130,8 @@ tidy_models %>%
 
 tab <- huxreg(models, 
        coefs = c("Proximal threat" = "threat_overall",
-                 "%Black(TPS)" = "prop_black_enroll_traditional",
-                 "%Hispanic(TPS)" = "prop_hispanic_enroll_traditional"),
+                 "%Black(TPS)" = "black_n_btw_prop_traditional",
+                 "%Hispanic(TPS)" = "hispanic_n_btw_prop_traditional"),
        statistics = c('N' = 'nobs', 'R-squared' = 'r.squared'),
        note = "{stars}. TPS = Traditional public schools. Standard errors clustered at the district level. Controls include the natural log of enrollment, local revenue, and per-student spending, and the share of 5-17 in poverty.") %>% 
   insert_row(c("District Fixed Effects", "X", "X"), after = 7) %>% 
@@ -157,10 +157,10 @@ tab <- huxreg(models,
 ```{r morefigs, out.width='90%', fig.align='center', dpi=340}
 m1_controls <- 
   felm(
-    prop_white_enroll_charter ~
+    white_n_within_prop_charter ~
       threat_overall +
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
+      black_n_btw_prop_traditional +
+      hispanic_n_btw_prop_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -170,10 +170,10 @@ m1_controls <-
 
 m2_controls <- 
   felm(
-    prop_white_enroll_charter ~
+    white_n_within_prop_charter ~
       threat_overall +
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
+      black_n_btw_prop_traditional +
+      hispanic_n_btw_prop_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -185,8 +185,8 @@ m3_controls <-
   felm(
     prop_charter ~
       threat_overall +
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
+      black_n_btw_prop_traditional +
+      hispanic_n_btw_prop_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -198,8 +198,8 @@ m4_controls <-
   felm(
     prop_charter ~
       threat_overall +
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
+      black_n_btw_prop_traditional +
+      hispanic_n_btw_prop_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -217,8 +217,8 @@ tidy_models <-
   map2(mod_names, ~ mutate(.x, model = .y)) %>% 
   map(~ mutate(.x, term = case_when(
     term == "threat_overall" ~ "Overall proxmial threat",
-    term == "prop_black_enroll_traditional" ~ "%Black - TPS",
-    term == "prop_hispanic_enroll_traditional" ~ "%Hispanic - TPS",
+    term == "black_n_btw_prop_traditional" ~ "%Black - TPS",
+    term == "hispanic_n_btw_prop_traditional" ~ "%Hispanic - TPS",
   )))
 
 tidy_models %>% 
@@ -235,8 +235,8 @@ tidy_models %>%
 
 tab <- huxreg(models, 
        coefs = c("Proximal threat" = "threat_overall", 
-                 "%Black(TPS)" = "prop_black_enroll_traditional",
-                 "%Hispanic(TPS)" = "prop_hispanic_enroll_traditional"),
+                 "%Black(TPS)" = "black_n_btw_prop_traditional",
+                 "%Hispanic(TPS)" = "hispanic_n_btw_prop_traditional"),
        statistics = c('N' = 'nobs', 'R-squared' = 'r.squared'),
        note = "{stars}. TPS = Traditional public schools. Standard errors clustered at the district level. Controls include the natural log of enrollment, local revenue, and per-student spending, and the share of 5-17 in poverty.") %>% 
   insert_row(c("District Fixed Effects", "X", "X", "X", "X"), after = 7) %>% 

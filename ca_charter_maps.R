@@ -251,7 +251,8 @@ ggsave("ca_charter_dens.png", dpi = 300)
 
 
 
-coast <- st_read("/Users/rap168/Downloads/tl_2017_us_coastline/tl_2017_us_coastline.shp") %>% st_as_sf() %>% filter(NAME == "Pacific") %>% st_transform(4326)
+coast <- read_sf("/Users/rap168/Documents/GitHub/new_project/aefp_poster/tl_2016_us_coastline/tl_2016_us_coastline.shp") %>% 
+  filter(NAME == "Pacific") 
 ca_coast <- st_crop(coast, xmin = -124.482, ymin = 32.52883, xmax = -114.1312, ymax = 42.00952)
 ca_coast <- st_union(st_combine(ca_coast))
 
@@ -260,11 +261,11 @@ st_erase <- function(x, y) {
 }
 
 ca_no_coast <- 
-  st_difference(shapefiles[[6]], ca_coast)
+  st_difference(shapefiles[[1]], ca_coast)
 
 
 ca_water <- map(list_counties("CA")$county, ~ area_water("CA", .x, class = "sf"))
-ca_water <- map(ca_water, st_transform, 4326)
+ca_water <- map(ca_water, st_transform, 4269)
 ca_water <- map(ca_water, ~ .x[str_detect(.x$FULLNAME, "Bay"), ])
 ca_water <- map(ca_water, ~ .x[!is.na(.x$FULLNAME), ])
 ca_water <- ca_water[which(map_dbl(ca_water, nrow) != 0)]
@@ -272,7 +273,7 @@ ca_water <- reduce(ca_water, rbind)
 ca_water <- st_union(st_combine(ca_water))
 
 
-ca_no_coast <- shapefiles[[6]]
+ca_no_coast <- shapefiles[[1]]
   
 for (i in ca_water) {
   ca_no_coast <- st_difference(ca_no_coast, i)

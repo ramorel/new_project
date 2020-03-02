@@ -202,20 +202,24 @@ charter_dat <-
 charter_demo <-
   s_dat %>%
   group_by(leaid, year, charter) %>% 
-  summarize_at(vars(hispanic:other), list(n = ~ sum(., na.rm = TRUE))) %>% 
+  summarize_at(vars(hispanic:other), ~ sum(., na.rm = TRUE)) %>% 
   ungroup() %>%
   complete(charter, nesting(leaid, year), 
-           fill = list(hispanic_n = 0,
-                       white_n = 0, black_n = 0, 
-                       native_am_n = 0, asian_n = 0, 
-                       total_n = 0, pacific_n = 0, 
-                       two_or_more_n = 0, other_n = 0)) %>% 
+           fill = list(hispanic = 0,
+                       white = 0, black = 0, 
+                       native_am = 0, asian = 0, 
+                       total = 0, pacific = 0, 
+                       two_or_more = 0, other = 0)) %>% 
   arrange(leaid, year, charter) %>% 
+  mutate(nonwhite = total - white) %>% 
   group_by(leaid, year) %>% 
-  mutate_at(vars(hispanic_n:other_n), list(within_prop = ~ round(./sum(., na.rm = TRUE), 2))) %>% 
-  mutate_at(vars(hispanic_n:other_n), list(overall_prop = ~ round(./sum(total_n, na.rm = TRUE), 2))) %>% 
+  # share_within answers the question, "What percent of [race] students in this district are enrolled in {TPS,charter}?
+  mutate_at(vars(hispanic:nonwhite), list(share_within = ~ round(./sum(., na.rm = TRUE), 2))) %>% 
+  # share_across answers the question, "What percent of students in the district are [race] and enrolled in {TPS,charter}?
+  mutate_at(vars(hispanic:nonwhite), list(share_across_district = ~ round(./sum(total, na.rm = TRUE), 2))) %>% 
   ungroup() %>%
-  mutate_at(vars(hispanic_n:other_n), list(btw_prop = ~ round(./total_n, 2))) %>% 
+  # share_btw answers the question, "What percent of {TPS,charter} students in this district are [race]?
+  mutate_at(vars(hispanic:nonwhite), list(share_btw = ~ round(./total, 2))) %>% 
   mutate(
     charter =
       ifelse(
@@ -224,7 +228,7 @@ charter_demo <-
         "traditional"
       )
   ) %>%
-  pivot_wider(names_from = charter, values_from = hispanic_n:last_col())
+  pivot_wider(names_from = charter, values_from = hispanic:last_col())
 
 charter_dat <-
   charter_dat %>%
@@ -235,11 +239,11 @@ charter_dat <-
   charter_dat %>%
   left_join(d_dat)
 
+# Get overall share of each race/ethnicity in the district
 charter_dat <-
-  charter_dat %>%
-  filter(number_of_schools != 1) %>% 
-  mutate(nonwhite_n_traditional = hispanic_n_traditional + black_n_traditional + native_am_n_traditional + asian_n_traditional + pacific_n_traditional + two_or_more_n_traditional + other_n_traditional) %>% 
-  mutate(nonwhite_n_prop_traditional = nonwhite_n_traditional / total_n_traditional)
+  charter_dat %>% 
+  mutate_at(vars(white:native_am, pacific, two_or_more, other), 
+            list(overall_district_share = ~ . / total))
 
 # keep the districts in non-urban areas & majority white districts & affluent districts
 charter_dat <-
@@ -263,44 +267,32 @@ charter_dat_urban <-
   filter(urban_centric_locale %in% c(1, 2, 11, 12)) %>%
   ungroup()
 
-charter_white_quant <-
+charter_maj_white <-
   charter_dat %>%
-  mutate(
-    white_prop = ifelse(white_prop == 0, NA, white_prop)
-  ) %>%
-  group_by(leaid, fips) %>%
-  fill(white, .direction = "up") %>%
-  summarize(
-    mean_white = mean(white_prop, na.rm = T)
-  ) %>%
-  ungroup() %>%
-  group_by(fips) %>%
-  mutate(
-    quant = ntile(mean_white, 5)
-  ) %>%
+  group_by(leaid) %>% 
+  mutate(maj_white = ifelse(white_overall_district_share >= 0.7, 1, 0)) %>% 
+  filter(all(maj_white[year < 2005] == 1)) %>% 
   ungroup()
 
-charter_dat_maj_white <-
-  charter_dat %>%
-  filter(leaid %in% (charter_white_quant %>% filter(quant %in% 4:5) %>% pull(leaid)))
-
-# some instances where white = 0 that appear to be errors; impute the previous value
-charter_dat_maj_white <-
-  charter_dat_maj_white %>%
-  mutate(
-    white_prop = ifelse(white_prop == 0, NA, white_prop)
-  ) %>%
-  group_by(leaid) %>%
-  fill(white, .direction = "up") %>%
-  ungroup()
-
+# Affluent -- either est% children in poverty or 2010 acs median income?
 charter_affluent <-
   charter_dat %>%
-  group_by(year) %>%
-  mutate(pov_quant = ntile(est_population_5_17_poverty_pct, 5)) %>%
   group_by(leaid) %>%
-  filter(sum(pov_quant == 1, na.rm = T) > (n() / 2)) %>%
+  mutate(affluent = ifelse(est_population_5_17_poverty_pct < 0.1, 1, 0)) %>% 
+  filter(all(affluent[year < 2005] == 1)) %>% 
   ungroup()
+
+median_income <- 
+  map(c("school district (elementary)", "school district (unified)", "school district (secondary)"),
+      ~ get_acs(geography = .x, variables = "B19013_001", year = 2010, state = "CA", geometry = FALSE)) %>% 
+  bind_rows() %>% 
+  select(GEOID, estimate) %>% 
+  mutate(GEOID = as.numeric(GEOID))
+
+charter_affluent2 <- 
+  charter_dat %>% 
+  left_join(median_income, by = c("leaid" = "GEOID")) %>% 
+  filter(estimate >= quantile(estimate, 0.6, na.rm = TRUE))
 
 rm(list = ls()[str_detect(ls(), "d_")][-2])
 rm(list = ls()[str_detect(ls(), "s_")])
@@ -313,8 +305,8 @@ m1_base <-
   felm(
     prop_charter ~
       threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional | 0 | 0 | leaid,
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional | 0 | 0 | leaid,
     data = charter_dat
   )
 
@@ -322,8 +314,8 @@ m1_base_fes <-
   felm(
     prop_charter ~
       threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional | leaid + year | 0 | leaid,
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional | leaid + year | 0 | leaid,
     data = charter_dat
   )
 
@@ -331,9 +323,9 @@ m1_pooled <-
   felm(
     prop_charter ~
       threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
-      white_n_btw_prop_traditional +
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional +
+      white_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -345,9 +337,9 @@ m1_controls <-
   felm(
     prop_charter ~
       threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
-      white_n_btw_prop_traditional +
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional +
+      white_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -358,8 +350,8 @@ m1_controls <-
 coefs_names <- c("Proximal Threat", "%Black in TPS", "%Hispanic in TPS")
 huxreg(list(m1_base, m1_base_fes ,m1_pooled, m1_controls), 
        coefs = c("Proximal threat" = "threat_overall",
-                 "%Black in TPS" = "black_n_btw_prop_traditional", 
-                 "%Hispanic in TPS" = "hispanic_n_btw_prop_traditional"),
+                 "%Black in TPS" = "black_share_btw_traditional", 
+                 "%Hispanic in TPS" = "hispanic_share_btw_traditional"),
        statistics = c('N' = 'nobs', 'R-squared' = 'r.squared'),
        note = "{stars}. \nStandard errors clustered at the district level. \nControls include the natural log of enrollment, local revenue, and per-student spending, and the share of 5-17 in poverty.") %>% 
   insert_row(c("District Fixed Effects", "", "X", "", "X"), after = 7) %>% 
@@ -373,28 +365,28 @@ huxreg(list(m1_base, m1_base_fes ,m1_pooled, m1_controls),
 # Models 2: White charter enrollment in a district ----
 m2_base <- 
   felm(
-    white_n_within_prop_charter ~
+    white_share_within_charter ~
       threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional | 0 | 0 | leaid,
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional | 0 | 0 | leaid,
     data = charter_dat
   )
 
 m2_base_fes <- 
   felm(
-    white_n_within_prop_charter ~
+    white_share_within_charter ~
       threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional | leaid + year | 0 | leaid,
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional | leaid + year | 0 | leaid,
     data = charter_dat
   )
 
 m2_pooled <- 
   felm(
-    white_n_within_prop_charter ~
+    white_share_within_charter ~
       threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -404,10 +396,10 @@ m2_pooled <-
 
 m2_controls <- 
   felm(
-    white_n_within_prop_charter ~
+    white_share_within_charter ~
       threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -420,9 +412,9 @@ huxreg(list("pooled" = m2_base, "fes" = m2_base_fes, "pooled" = m2_pooled, "fes"
 # Models 3: Proximal threat ----
 m3_overall_prox <- 
   felm(
-    prop_white_enroll_charter ~
+    white_share_within_charter ~
       threat_overall +
-      prop_white_enroll_traditional +
+      white_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -432,10 +424,10 @@ m3_overall_prox <-
 
 m3_prox <- 
   felm(
-    prop_white_enroll_charter ~
+    white_share_within_charter ~
       threat_black +
       threat_hispanic + 
-      prop_white_enroll_traditional +
+      white_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -448,9 +440,8 @@ huxreg(list(m3_overall_prox, m3_prox))
 # Models 4: Direct threat ----
 m4_overall_direct <- 
   felm(
-    prop_white_enroll_charter ~
-      prop_nonwhite_enroll_traditional +
-      #prop_white_enroll_traditional +
+    white_share_within_charter ~
+      nonwhite_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -460,10 +451,10 @@ m4_overall_direct <-
 
 m4_direct <- 
   felm(
-    prop_white_enroll_charter ~
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
-      prop_white_enroll_traditional +
+    white_share_within_charter ~
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional +
+      white_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -476,11 +467,11 @@ huxreg(list(m4_overall_direct, m4_direct))
 # Models 5: Urban v Non-urban ----
 m5_non <- 
   felm(
-    prop_white_enroll_charter ~
+    white_share_within_charter ~
       threat_overall +
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
-      prop_white_enroll_traditional +
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional +
+      white_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -490,11 +481,11 @@ m5_non <-
 
 m5_urban <- 
   felm(
-    prop_white_enroll_charter ~
+    white_share_within_charter ~
       threat_overall +
-      prop_black_enroll_traditional +
-      prop_hispanic_enroll_traditional +
-      prop_white_enroll_traditional +
+      black_share_btw_traditional +
+      hispanic_share_btw_traditional +
+      white_share_btw_traditional +
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
