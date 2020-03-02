@@ -114,7 +114,7 @@ For each analysis, I controlled for time-varying district-level covariates. I in
 
 To model the relationship between charter school enrollment and spatial threat, I use a fixed effects model, the generic form of which is:
 
-$$ Y_{ij} = \beta_1Threat_{ij} + \beta_3 Trad_{ij} + X_{it}\beta + \alpha_i + \gamma_j + \epsilon_{ij} $$
+$$ Y_{ij} = \beta_1Threat_{ij} + \beta_3 Trad_{ij} + X_{ij}\beta + \alpha_i + \gamma_j + \epsilon_{ij} $$
 
 where $Y_{ij}$ represents the (1) the share of charter schools in a district or (2) the share of white students enrolled in charter schools. 
 $X_{it}\beta$ is a vector of time-varying district-level covariates. 

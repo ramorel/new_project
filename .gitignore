@@ -13,3 +13,5 @@
 *.icloud
 EDGE_SCHOOLDISTRICT_TL16_SY1516
 shapefiles
+*.DS_Store
+*.rds
