@@ -5,7 +5,7 @@ author:
     affil: 1
 affiliation:
   - num: 1
-    address: Learning Research and Development Center, University of Pittsburgh
+    address: Postdoctoral Research Associate, Learning Research and Development Center, University of Pittsburgh
 column_numbers: 3
 logoleft_name: RGB_Shield_Stacked_Education_3color.png 
 output: 
@@ -37,13 +37,31 @@ theme_set(
       plot.title = element_text(size = 12, colour = "grey25", face = "bold"),
       plot.subtitle = element_text(size = 11, colour = "grey45"))
 )
+
+charter_dat <- 
+  charter_dat %>% 
+  mutate_at(vars(matches("share|threat")), list(scaled = ~ . * 100)) %>% 
+  mutate(prop_charter_scaled = prop_charter * 100,
+         est_population_5_17_poverty_pct_scaled = est_population_5_17_poverty_pct * 100)
+
+charter_dat_non_urban <-
+  charter_dat_non_urban %>% 
+  mutate_at(vars(matches("share|threat")), list(scaled = ~ . * 100)) %>% 
+  mutate(prop_charter_scaled = prop_charter * 100,
+         est_population_5_17_poverty_pct_scaled = est_population_5_17_poverty_pct * 100)
+
+charter_dat_urban <-
+  charter_dat_urban %>% 
+  mutate_at(vars(matches("share|threat")), list(scaled = ~ . * 100)) %>% 
+  mutate(prop_charter_scaled = prop_charter * 100,
+         est_population_5_17_poverty_pct_scaled = est_population_5_17_poverty_pct * 100)
 ```
 
 # Overview
 
-While school choice policies are now ubiqitous are often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation. Using a group threat/status anxiety framework, I hypothesize that increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal status threat, where racial diversification occurs in neighboring school districts, and direct status threat, where racial diversification occurs within local traditional public schools. I find evidence that both proximal and direct threat are associated with both increased foundings of charter schools and with white enrollment in charter schools. 
+While school choice policies are now ubiqitous are often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation. More specifically, white families may use charters to exit from racially diversifying schools. Using a group threat/status anxiety framework, I hypothesize that increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal status threat, where racial diversification occurs in neighboring school districts, and direct status threat, where racial diversification occurs within local traditional public schools. I find evidence that both proximal and direct threat are associated with both increased foundings of charter schools and with white enrollment in charter schools. 
 
-[SOME IMPLICATIONS]
+These results suggest that white families enroll in charter schools 
 
 # Data Methods
 
@@ -62,7 +80,7 @@ where $\theta_{ij} = \frac{White_{ij}}{Total_{ij}}$ and $\gamma_{ij} = \frac{\su
 
 **Direct status threat**
 
-$$DirThreat_{ij} = \frac{BlkTPS{ij}, HispTPS{ij}}{Total_{ij}}$$
+$$DirThreat_{ij} = \frac{\{BlkTPS{ij}, HispTPS{ij}\}}{\{TotalBlk_{ij},TotalHisp_{ij}\}}$$
 $i$ indexes districts, $j$ indexes years, and $k$ indexes districts that neighbor $i$
 
 **Analytic model: Fixed Effects Regression**
@@ -80,40 +98,50 @@ Usually you want to have a nice table displaying some important results that you
 ```{r standard-plot, out.width='90%', fig.align='center', dpi=340}
 m1_controls <- 
   felm(
-    prop_charter ~
-      threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
+    prop_charter_scaled ~
+      threat_overall_scaled +
+      black_share_btw_traditional_scaled +
+      hispanic_share_btw_traditional_scaled +
+      white_overall_district_share_scaled +
+      t_s_ratio + 
+      share_swd_scaled + 
+      share_title_i_scaled + 
+      share_magnet_scaled + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
-      est_population_5_17_poverty_pct | leaid + year | 0 | leaid,
+      est_population_5_17_poverty_pct_scaled | leaid + year | 0 | leaid,
     data = charter_dat
   )
 
 m2_controls <- 
   felm(
-    white_n_within_prop_charter ~
-      threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
+    white_share_within_charter_scaled ~
+      threat_overall_scaled +
+      black_share_btw_traditional_scaled +
+      hispanic_share_btw_traditional_scaled +
+      white_overall_district_share_scaled +
+      t_s_ratio + 
+      share_swd_scaled + 
+      share_title_i_scaled + 
+      share_magnet + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
-      est_population_5_17_poverty_pct | leaid + year | 0 | leaid,
+      est_population_5_17_poverty_pct_scaled| leaid + year | 0 | leaid,
     data = charter_dat
   )
 
-models <- list("%charter" = m1_controls, "White charter enrollment" = m2_controls) 
+models <- list("Share of Charters" = m1_controls, "White Enrollment in Charters" = m2_controls) 
 mod_names <- names(models)
 tidy_models <- 
   map(models, tidy) %>% 
-  map(~ filter(.x, str_detect(term, "threat_|prop_"))) %>% 
+  map(~ filter(.x, str_detect(term, "threat_|black|hispanic"))) %>% 
   map2(mod_names, ~ mutate(.x, model = .y)) %>% 
   map(~ mutate(.x, term = case_when(
-    term == "threat_overall" ~ "Overall proxmial threat",
-    term == "black_n_btw_prop_traditional" ~ "%Black - TPS",
-    term == "hispanic_n_btw_prop_traditional" ~ "%Hispanic - TPS",
+    term == "threat_overall_scaled" ~ "Overall proxmial threat",
+    term == "black_share_btw_traditional_scaled" ~ "%Black - TPS",
+    term == "hispanic_share_btw_traditional_scaled" ~ "%Hispanic - TPS",
   )))
 
 tidy_models %>% 
@@ -124,14 +152,16 @@ tidy_models %>%
     colour = "grey60", 
     linetype = 2) + 
   scale_color_brewer(name = "Model", palette = "Paired", direction = -1) + 
-  labs(y = "", x = "Coefficient Estimate") +
+  labs(y = "", x = "Coefficient Estimate",
+       title = "Results of Direct and Proximal Threat on Charter Density and White Enrollment", 
+       caption = str_wrap("TPS = Traditional public schools. Coefficient estimates based on OLS regression with district and year fixed effects. Standard errors clustered at the district level. Controls include the natural log of enrollment, local revenue, and per-student spending, and the share of children in poverty.", 70)) +
   coord_flip() + 
   theme_minimal()
 
 tab <- huxreg(models, 
-       coefs = c("Proximal threat" = "threat_overall",
-                 "%Black(TPS)" = "black_n_btw_prop_traditional",
-                 "%Hispanic(TPS)" = "hispanic_n_btw_prop_traditional"),
+       coefs = c("Proximal threat" = "threat_overall_scaled",
+                 "%Black(TPS)" = "black_share_btw_traditional_scaled",
+                 "%Hispanic(TPS)" = "hispanic_share_btw_traditional_scaled"),
        statistics = c('N' = 'nobs', 'R-squared' = 'r.squared'),
        note = "{stars}. TPS = Traditional public schools. Standard errors clustered at the district level. Controls include the natural log of enrollment, local revenue, and per-student spending, and the share of 5-17 in poverty.") %>% 
   insert_row(c("District Fixed Effects", "X", "X"), after = 7) %>% 
@@ -140,11 +170,7 @@ tab <- huxreg(models,
   set_bottom_border(8, 2:3, 0) %>% 
   set_bottom_border(9, 2:3, 0) %>% 
   set_bottom_border(10, 2:3, 0) %>% 
-  insert_row(c("", "Share of Charters", "White Enrollment in Charters"), after = 0) %>% 
-  set_bottom_border(1, 1:3, 1) %>% 
-  set_bottom_border(1, 1:3, 0) %>% 
-  set_top_border(2, 1:3, 0) %>%
-  set_align(1:14, 2:3, "center") %>% 
+  set_align(1:13, 2:3, "center") %>% 
   insert_row(c("Table 1: Fixed effects regression of share of charters and white enrollment \non proximal and direct threat", "", ""), after = 0) %>% 
   set_colspan(1, 1, 3) %>% 
   set_top_border(1, 1:3, 0) %>% 
@@ -157,53 +183,73 @@ tab <- huxreg(models,
 ```{r morefigs, out.width='90%', fig.align='center', dpi=340}
 m1_controls <- 
   felm(
-    white_n_within_prop_charter ~
-      threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
+    white_share_within_charter_scaled ~
+      threat_overall_scaled +
+      black_share_btw_traditional_scaled +
+      hispanic_share_btw_traditional_scaled +
+      white_overall_district_share_scaled +
+      t_s_ratio + 
+      share_swd_scaled + 
+      share_title_i_scaled + 
+      share_magnet_scaled + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
-      est_population_5_17_poverty_pct | leaid + year | 0 | leaid,
+      est_population_5_17_poverty_pct_scaled | leaid + year | 0 | leaid,
     data = charter_dat_non_urban
   )
 
 m2_controls <- 
   felm(
-    white_n_within_prop_charter ~
-      threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
+    white_share_within_charter_scaled ~
+      threat_overall_scaled +
+      black_share_btw_traditional_scaled +
+      hispanic_share_btw_traditional_scaled +
+      white_overall_district_share_scaled +
+      t_s_ratio + 
+      share_swd_scaled + 
+      share_title_i_scaled + 
+      share_magnet_scaled + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
-      est_population_5_17_poverty_pct | leaid + year | 0 | leaid,
+      est_population_5_17_poverty_pct_scaled | leaid + year | 0 | leaid,
     data = charter_dat_urban
   )
 
 m3_controls <- 
   felm(
-    prop_charter ~
-      threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
+    prop_charter_scaled ~
+      threat_overall_scaled +
+      black_share_btw_traditional_scaled +
+      hispanic_share_btw_traditional_scaled +
+      white_overall_district_share_scaled +
+      t_s_ratio + 
+      share_swd_scaled + 
+      share_title_i_scaled + 
+      share_magnet_scaled + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
-      est_population_5_17_poverty_pct | leaid + year | 0 | leaid,
+      est_population_5_17_poverty_pct_scaled | leaid + year | 0 | leaid,
     data = charter_dat_non_urban
   )
 
 m4_controls <- 
   felm(
-    prop_charter ~
-      threat_overall +
-      black_n_btw_prop_traditional +
-      hispanic_n_btw_prop_traditional +
+    prop_charter_scaled ~
+      threat_overall_scaled +
+      black_share_btw_traditional_scaled +
+      hispanic_share_btw_traditional_scaled +
+      white_overall_district_share_scaled +
+      t_s_ratio + 
+      share_swd_scaled + 
+      share_title_i_scaled + 
+      share_magnet_scaled + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
-      est_population_5_17_poverty_pct | leaid + year | 0 | leaid,
+      est_population_5_17_poverty_pct_scaled | leaid + year | 0 | leaid,
     data = charter_dat_urban
   )
 
@@ -213,12 +259,12 @@ models <- list("Non-urban white enrollment" = m1_controls, "Urban white enrollme
 mod_names <- names(models)
 tidy_models <- 
   map(models, tidy) %>% 
-  map(~ filter(.x, str_detect(term, "threat_|prop_"))) %>% 
+  map(~ filter(.x, str_detect(term, "threat_|black|hispanic"))) %>% 
   map2(mod_names, ~ mutate(.x, model = .y)) %>% 
   map(~ mutate(.x, term = case_when(
-    term == "threat_overall" ~ "Overall proxmial threat",
-    term == "black_n_btw_prop_traditional" ~ "%Black - TPS",
-    term == "hispanic_n_btw_prop_traditional" ~ "%Hispanic - TPS",
+    term == "threat_overall_scaled" ~ "Overall proxmial threat",
+    term == "black_share_btw_traditional_scaled" ~ "%Black - TPS",
+    term == "hispanic_share_btw_traditional_scaled" ~ "%Hispanic - TPS",
   )))
 
 tidy_models %>% 
@@ -229,14 +275,16 @@ tidy_models %>%
     colour = "grey60", 
     linetype = 2) + 
   scale_color_brewer(name = "Model", palette = "Paired", direction = -1) + 
-  labs(y = "", x = "Coefficient Estimate") +
+  labs(y = "", x = "Coefficient Estimate",
+       title = "Comparing white charter enrollment in non-urban and urban districts",
+       caption = str_wrap("TPS = Traditional public schools. Coefficient estimates based on OLS regression with district and year fixed effects. Standard errors clustered at the district level. Controls include the natural log of enrollment, local revenue, and per-student spending, and the share of children in poverty.", 70)) +
   coord_flip() + 
   theme_minimal()
 
 tab <- huxreg(models, 
-       coefs = c("Proximal threat" = "threat_overall", 
-                 "%Black(TPS)" = "black_n_btw_prop_traditional",
-                 "%Hispanic(TPS)" = "hispanic_n_btw_prop_traditional"),
+       coefs = c("Proximal threat" = "threat_overall_scaled", 
+                 "%Black(TPS)" = "black_share_btw_traditional_scaled",
+                 "%Hispanic(TPS)" = "hispanic_share_btw_traditional_scaled"),
        statistics = c('N' = 'nobs', 'R-squared' = 'r.squared'),
        note = "{stars}. TPS = Traditional public schools. Standard errors clustered at the district level. Controls include the natural log of enrollment, local revenue, and per-student spending, and the share of 5-17 in poverty.") %>% 
   insert_row(c("District Fixed Effects", "X", "X", "X", "X"), after = 7) %>% 
@@ -267,19 +315,21 @@ p1 <- charter_dat %>%
   filter(year %in% c(2000, 2015)) %>% 
   right_join(rbind(shapefiles[[1]] %>% mutate(year = year + 1), shapefiles[[9]]), by = c("leaid" = "geoid", "year")) %>% 
   ggplot() + 
-  geom_sf(aes(geometry = geometry, fill = prop_charter), alpha = 0.7, size = 0.25, color = "white") + 
-  scale_fill_viridis_c(name = "", option = "magma", na.value = "white") + 
+  geom_sf(aes(geometry = geometry, fill = prop_charter_scaled), color = NA) + 
+  facet_wrap(~ year, nrow = 1) +
+  scale_fill_viridis_c(name = "", na.value = "white", begin = 0.1, end = 1) + 
   labs(title = "District Share of Charter Schools") +
-  facet_wrap(~ year, nrow = 1)
+  theme(legend.position = "bottom")
 
 p2 <- charter_dat %>% 
   filter(year %in% c(2000, 2015)) %>% 
   right_join(rbind(shapefiles[[1]] %>% mutate(year = year + 1), shapefiles[[9]]), by = c("leaid" = "geoid", "year")) %>% 
   ggplot() + 
-  geom_sf(aes(geometry = geometry, fill = threat_overall), alpha = 0.7, size = 0.25, color = "white") + 
-  scale_fill_viridis_c(name = "", option = "magma", na.value = "white") + 
-  labs(title = "District Proximal Threat Level") +
-  facet_wrap(~ year, nrow = 1) 
+  geom_sf(aes(geometry = geometry, fill = white_share_within_charter_scaled), color = NA) + 
+  facet_wrap(~ year, nrow = 1) + 
+  scale_fill_viridis_c(name = "", na.value = "white", begin = 0.1, end = 1) + 
+  labs(title = "Share of White Students Enrolled in Charter Schools") +
+  theme(legend.position = "bottom")
 
 p1
 

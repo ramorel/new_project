@@ -12,12 +12,60 @@ load("district_shapefiles.RData")
 d_dat <- 
   d_dat %>% 
   filter(fips == 6) %>% 
-  select(-contains("est_population"))
+  select(-contains("est_population"),
+         -lea_name:-longitude,
+         -cbsa:-highest_grade_offered,
+         -teachers_prek_fte:-school_counselors_fte,
+         -district_id, -district_name,
+         -read_test_pct_prof_midpt_total:-math_test_pct_prof_low_two_or_more) %>% 
+  mutate(share_swd = spec_ed_students/enrollment,
+         share_ell = english_language_learners/enrollment,
+         share_migrant = migrant_students/enrollment)
 
 ## California schools
 s_dat <-
   s_dat %>% 
   filter(fips == 6)
+
+t_s_ratio <- 
+  s_dat %>% 
+  filter(charter == 0) %>% 
+  group_by(leaid, year) %>% 
+  summarize_at(vars(teachers_fte, enrollment), sum, na.rm = TRUE) %>% 
+  ungroup() %>% 
+  mutate(t_s_ratio = teachers_fte/enrollment) %>% 
+  select(leaid, year, t_s_ratio)
+
+share_title_i <- 
+  s_dat %>% 
+  filter(!is.na(title_i_eligible)) %>% 
+  count(leaid, year, title_i_eligible) %>% 
+  complete(title_i_eligible, nesting(leaid, year), fill = list(n = 0)) %>% 
+  arrange(leaid, year, title_i_eligible) %>% 
+  group_by(leaid, year) %>% 
+  mutate(share_title_i = n / sum(n)) %>% 
+  ungroup() %>% 
+  filter(title_i_eligible == 1) %>% 
+  select(leaid, year, share_title_i)
+
+share_magnet <- 
+  s_dat %>% 
+  filter(!is.na(magnet)) %>% 
+  count(leaid, year, magnet) %>% 
+  complete(magnet, nesting(leaid, year), fill = list(n = 0)) %>% 
+  arrange(leaid, year, magnet) %>% 
+  group_by(leaid, year) %>% 
+  mutate(share_magnet = n / sum(n)) %>% 
+  ungroup() %>% 
+  filter(magnet == 1) %>% 
+  select(leaid, year, share_magnet)
+  
+
+d_dat <- 
+  d_dat %>% 
+  left_join(t_s_ratio) %>% 
+  left_join(share_title_i) %>% 
+  left_join(share_magnet)
 
 # CA poverty data
 d_pov <-
@@ -245,6 +293,7 @@ charter_dat <-
   mutate_at(vars(white:native_am, pacific, two_or_more, other), 
             list(overall_district_share = ~ . / total))
 
+
 # keep the districts in non-urban areas & majority white districts & affluent districts
 charter_dat <-
   charter_dat %>%
@@ -255,6 +304,83 @@ charter_dat <-
     per_pupil_spending = exp_total / total
   )
 
+# Segregation in TPS and charters
+#library(seg)
+#
+#district_seg <- function(df, leaid_num, charter = TRUE) {
+  
+  if (charter) {
+    df <- df %>% 
+      select(leaid, charter, white, non_white) %>% 
+      filter(charter == 1, leaid == leaid_num) %>% 
+      select(white, non_white)
+  } else {
+    df <- df %>% 
+      select(leaid, charter, white, non_white) %>% 
+      filter(charter == 0, leaid == leaid_num) %>% 
+      select(white, non_white)
+  }
+  
+  
+  if (any(colSums(df, na.rm = TRUE) == 0) | any(is.na(df))) {
+    return(NA_real_)
+  }
+  
+  seg_idx <- dissim(data = df) %>% 
+    pluck("d")
+  
+  return(seg_idx)
+}
+#
+#charter_seg <-
+#  s_dat %>% 
+#  group_split(year) %>% 
+#  map(~ map_df(unique(.[["leaid"]]), function(y) 
+#    tibble(leaid = y, charter_seg = district_seg(.x, leaid = y))))
+#
+#charter_seg <- map2(charter_seg, c(2000:2015), ~ mutate(.x, year = .y)) %>% bind_rows()
+#
+#tps_seg <- 
+#  s_dat %>% 
+#  group_split(year) %>% 
+#  map(~ map_df(unique(.[["leaid"]]), function(y) 
+#    tibble(leaid = y, tps_seg = district_seg(.x, leaid = y, charter = FALSE))))
+#
+#tps_seg <- map2(tps_seg, c(2000:2015), ~ mutate(.x, year = .y)) %>% bind_rows()
+#
+#charter_dat <-
+#  left_join(charter_dat, charter_seg) %>% 
+#  left_join(tps_seg)
+
+library(segregation)
+
+tps_seg <- 
+  s_dat %>% 
+  filter(charter == 0) %>% 
+  group_split(year) %>% 
+  map2_df(c(2000:2015), ~ .x %>% 
+            select(leaid, ncessch_num, hispanic:asian, pacific:other) %>% 
+            pivot_longer(cols = c(-leaid, -ncessch_num), names_to = "race", values_to = "n") %>% 
+            mutual_within("race", "ncessch_num", weight = "n", within = "leaid", wide = TRUE) %>% 
+            transmute(leaid = leaid, tps_H = H) %>% 
+            mutate(year = .y))
+
+charter_seg <- 
+  s_dat %>% 
+  filter(charter == 1) %>% 
+  group_split(year) %>% 
+  map2_df(c(2000:2015), ~ .x %>% 
+            select(leaid, ncessch_num, hispanic:asian, pacific:other) %>% 
+            pivot_longer(cols = c(-leaid, -ncessch_num), names_to = "race", values_to = "n") %>% 
+            mutual_within("race", "ncessch_num", weight = "n", within = "leaid", wide = TRUE) %>% 
+            transmute(leaid = leaid, charter_H = H) %>% 
+            mutate(year = .y))
+
+charter_dat <-
+  left_join(charter_dat, charter_seg) %>% 
+  left_join(tps_seg)
+
+# Slice up the dataset
 charter_dat_non_urban <-
   charter_dat %>%
   group_by(leaid) %>%
@@ -270,9 +396,13 @@ charter_dat_urban <-
 charter_maj_white <-
   charter_dat %>%
   group_by(leaid) %>% 
-  mutate(maj_white = ifelse(white_overall_district_share >= 0.7, 1, 0)) %>% 
+  mutate(maj_white = ifelse(white_overall_district_share >= 0.6, 1, 0)) %>% 
   filter(all(maj_white[year < 2005] == 1)) %>% 
   ungroup()
+
+charter_min_white <-
+  charter_dat %>% 
+  filter(!leaid %in% charter_maj_white[["leaid"]])
 
 # Affluent -- either est% children in poverty or 2010 acs median income?
 charter_affluent <-
@@ -293,6 +423,14 @@ charter_affluent2 <-
   charter_dat %>% 
   left_join(median_income, by = c("leaid" = "GEOID")) %>% 
   filter(estimate >= quantile(estimate, 0.6, na.rm = TRUE))
+
+charter_non_affluent <- 
+  charter_dat %>% 
+  filter(!leaid %in% charter_affluent$leaid)
+
+charter_non_affluent2 <- 
+  charter_dat %>% 
+  filter(!leaid %in% charter_affluent2$leaid)
 
 rm(list = ls()[str_detect(ls(), "d_")][-2])
 rm(list = ls()[str_detect(ls(), "s_")])
@@ -326,6 +464,10 @@ m1_pooled <-
       black_share_btw_traditional +
       hispanic_share_btw_traditional +
       white_share_btw_traditional +
+      t_s_ratio + 
+      share_swd + 
+      share_title_i + 
+      share_magnet + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -340,6 +482,10 @@ m1_controls <-
       black_share_btw_traditional +
       hispanic_share_btw_traditional +
       white_share_btw_traditional +
+      t_s_ratio + 
+      share_swd + 
+      share_title_i + 
+      share_magnet + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -387,6 +533,10 @@ m2_pooled <-
       threat_overall +
       black_share_btw_traditional +
       hispanic_share_btw_traditional +
+      t_s_ratio + 
+      share_swd + 
+      share_title_i + 
+      share_magnet + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +
@@ -400,6 +550,10 @@ m2_controls <-
       threat_overall +
       black_share_btw_traditional +
       hispanic_share_btw_traditional +
+      t_s_ratio + 
+      share_swd + 
+      share_title_i + 
+      share_magnet + 
       log(enrollment) +
       log(rev_local_total) +
       log(per_pupil_spending) +

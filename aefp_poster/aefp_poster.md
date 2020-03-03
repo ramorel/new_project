@@ -5,7 +5,7 @@ author:
     affil: 1
 affiliation:
   - num: 1
-    address: Learning Research and Development Center, University of Pittsburgh
+    address: Postdoctoral Research Associate, Learning Research and Development Center, University of Pittsburgh
 column_numbers: 3
 logoleft_name: RGB_Shield_Stacked_Education_3color.png 
 output: 
@@ -19,9 +19,9 @@ bibliography: packages.bib
 
 # Overview
 
-While school choice policies are now ubiqitous are often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation. Using a group threat/status anxiety framework, I hypothesize that increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal status threat, where racial diversification occurs in neighboring school districts, and direct status threat, where racial diversification occurs within local traditional public schools. I find evidence that both proximal and direct threat are associated with both increased foundings of charter schools and with white enrollment in charter schools. 
+While school choice policies are now ubiqitous are often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation. More specifically, white families may use charters to exit from racially diversifying schools. Using a group threat/status anxiety framework, I hypothesize that increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal status threat, where racial diversification occurs in neighboring school districts, and direct status threat, where racial diversification occurs within local traditional public schools. I find evidence that both proximal and direct threat are associated with both increased foundings of charter schools and with white enrollment in charter schools. 
 
-[SOME IMPLICATIONS]
+These results suggest that white families enroll in charter schools 
 
 # Data Methods
 
@@ -40,7 +40,7 @@ where $\theta_{ij} = \frac{White_{ij}}{Total_{ij}}$ and $\gamma_{ij} = \frac{\su
 
 **Direct status threat**
 
-$$DirThreat_{ij} = \frac{BlkTPS{ij}, HispTPS{ij}}{Total_{ij}}$$
+$$DirThreat_{ij} = \frac{\{BlkTPS{ij}, HispTPS{ij}\}}{\{TotalBlk_{ij},TotalHisp_{ij}\}}$$
 $i$ indexes districts, $j$ indexes years, and $k$ indexes districts that neighbor $i$
 
 **Analytic model: Fixed Effects Regression**
