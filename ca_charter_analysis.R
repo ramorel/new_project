@@ -1,31 +1,24 @@
 library(tidyverse)
-library(educationdata)
 library(tidycensus)
 library(lfe)
 library(sf)
 library(huxtable)
+library(segregation)
 
-load("charter_analysis.RData")
-load("district_shapefiles.RData")
+# 1) Load the data ----
+load("ca_school_data.RData")
+load("ca_district_shapefiles.RData")
 
-## California districts
+## 1) Get California data ----
 d_dat <- 
   d_dat %>% 
-  filter(fips == 6) %>% 
-  select(-contains("est_population"),
-         -lea_name:-longitude,
+  select(-lea_name:-longitude,
          -cbsa:-highest_grade_offered,
          -teachers_prek_fte:-school_counselors_fte,
-         -district_id, -district_name,
-         -read_test_pct_prof_midpt_total:-math_test_pct_prof_low_two_or_more) %>% 
+         -district_id, -district_name) %>% 
   mutate(share_swd = spec_ed_students/enrollment,
          share_ell = english_language_learners/enrollment,
          share_migrant = migrant_students/enrollment)
-
-## California schools
-s_dat <-
-  s_dat %>% 
-  filter(fips == 6)
 
 t_s_ratio <- 
   s_dat %>% 
@@ -60,39 +53,13 @@ share_magnet <-
   filter(magnet == 1) %>% 
   select(leaid, year, share_magnet)
   
-
 d_dat <- 
   d_dat %>% 
   left_join(t_s_ratio) %>% 
   left_join(share_title_i) %>% 
   left_join(share_magnet)
 
-# CA poverty data
-d_pov <-
-  get_education_data(
-    level = "school-districts",
-    source = "saipe",
-    filters = list(
-      year = 2000:2015,
-      fips = 6
-    )
-  ) %>%
-  mutate(leaid = as.numeric(leaid)) %>%
-  as_tibble() %>%
-  na_if(-1) %>%
-  na_if(-2) %>%
-  na_if(-3) %>%
-  na_if(-9) %>%
-  arrange(leaid, year) %>% 
-  select(leaid, year, contains("est_population"))
-
-d_dat <- 
-  left_join(d_dat, d_pov)
-
-## Determine threat ----
-shapefiles <- 
-  map(shapefiles, ~ filter(.x, statefp == 6))
-
+## 2) Determine threat ----
 district_borders <-
   map(shapefiles, st_touches)
 
@@ -229,12 +196,12 @@ district_borders <-
 rm(district_borders_even)
 rm(district_borders_odd)
 
-## 6) join district and threat data ----
+## 3) join district and threat data ----
 d_dat <-
   d_dat %>%
   inner_join(district_borders)
 
-## 7) Charter information ----
+## 4) Charter information ----
 # number of charters per district per year
 charter_dat <-
   s_dat %>%
@@ -250,7 +217,10 @@ charter_dat <-
 charter_demo <-
   s_dat %>%
   group_by(leaid, year, charter) %>% 
-  summarize_at(vars(hispanic:other), ~ sum(., na.rm = TRUE)) %>% 
+  summarize_at(vars(white, hispanic, 
+                    black, asian, 
+                    native_am, pacific, 
+                    two_or_more, other, total), ~ sum(., na.rm = TRUE)) %>% 
   ungroup() %>%
   complete(charter, nesting(leaid, year), 
            fill = list(hispanic = 0,
@@ -262,12 +232,21 @@ charter_demo <-
   mutate(nonwhite = total - white) %>% 
   group_by(leaid, year) %>% 
   # share_within answers the question, "What percent of [race] students in this district are enrolled in {TPS,charter}?
-  mutate_at(vars(hispanic:nonwhite), list(share_within = ~ round(./sum(., na.rm = TRUE), 2))) %>% 
+  mutate_at(vars(white, hispanic, 
+                 black, asian, 
+                 native_am, pacific, 
+                 two_or_more, other, total), list(share_within = ~ round(./sum(., na.rm = TRUE), 2))) %>% 
   # share_across answers the question, "What percent of students in the district are [race] and enrolled in {TPS,charter}?
-  mutate_at(vars(hispanic:nonwhite), list(share_across_district = ~ round(./sum(total, na.rm = TRUE), 2))) %>% 
+  mutate_at(vars(white, hispanic, 
+                 black, asian, 
+                 native_am, pacific, 
+                 two_or_more, other, total), list(share_across_district = ~ round(./sum(total, na.rm = TRUE), 2))) %>% 
   ungroup() %>%
   # share_btw answers the question, "What percent of {TPS,charter} students in this district are [race]?
-  mutate_at(vars(hispanic:nonwhite), list(share_btw = ~ round(./total, 2))) %>% 
+  mutate_at(vars(white, hispanic, 
+                 black, asian, 
+                 native_am, pacific, 
+                 two_or_more, other, total), list(share_btw = ~ round(./total, 2))) %>% 
   mutate(
     charter =
       ifelse(
@@ -276,7 +255,7 @@ charter_demo <-
         "traditional"
       )
   ) %>%
-  pivot_wider(names_from = charter, values_from = hispanic:last_col())
+  pivot_wider(names_from = charter, values_from = white:last_col())
 
 charter_dat <-
   charter_dat %>%
@@ -290,7 +269,10 @@ charter_dat <-
 # Get overall share of each race/ethnicity in the district
 charter_dat <-
   charter_dat %>% 
-  mutate_at(vars(white:native_am, pacific, two_or_more, other), 
+  mutate_at(vars(white, hispanic, 
+            black, asian, 
+            native_am, pacific, 
+            two_or_more, other, total), 
             list(overall_district_share = ~ . / total))
 
 
@@ -304,56 +286,7 @@ charter_dat <-
     per_pupil_spending = exp_total / total
   )
 
-# Segregation in TPS and charters
-#library(seg)
-#
-#district_seg <- function(df, leaid_num, charter = TRUE) {
-  
-  if (charter) {
-    df <- df %>% 
-      select(leaid, charter, white, non_white) %>% 
-      filter(charter == 1, leaid == leaid_num) %>% 
-      select(white, non_white)
-  } else {
-    df <- df %>% 
-      select(leaid, charter, white, non_white) %>% 
-      filter(charter == 0, leaid == leaid_num) %>% 
-      select(white, non_white)
-  }
-  
-  
-  if (any(colSums(df, na.rm = TRUE) == 0) | any(is.na(df))) {
-    return(NA_real_)
-  }
-  
-  seg_idx <- dissim(data = df) %>% 
-    pluck("d")
-  
-  return(seg_idx)
-}
-#
-#charter_seg <-
-#  s_dat %>% 
-#  group_split(year) %>% 
-#  map(~ map_df(unique(.[["leaid"]]), function(y) 
-#    tibble(leaid = y, charter_seg = district_seg(.x, leaid = y))))
-#
-#charter_seg <- map2(charter_seg, c(2000:2015), ~ mutate(.x, year = .y)) %>% bind_rows()
-#
-#tps_seg <- 
-#  s_dat %>% 
-#  group_split(year) %>% 
-#  map(~ map_df(unique(.[["leaid"]]), function(y) 
-#    tibble(leaid = y, tps_seg = district_seg(.x, leaid = y, charter = FALSE))))
-#
-#tps_seg <- map2(tps_seg, c(2000:2015), ~ mutate(.x, year = .y)) %>% bind_rows()
-#
-#charter_dat <-
-#  left_join(charter_dat, charter_seg) %>% 
-#  left_join(tps_seg)
-
-library(segregation)
-
+# 5) Segregation in TPS and charters ----
 tps_seg <- 
   s_dat %>% 
   filter(charter == 0) %>% 
@@ -376,9 +309,67 @@ charter_seg <-
             transmute(leaid = leaid, charter_H = H) %>% 
             mutate(year = .y))
 
+district_seg <-
+  s_dat %>%  
+  group_split(year) %>% 
+  map2_df(c(2000:2015), ~ .x %>% 
+            select(leaid, ncessch_num, hispanic:asian, pacific:other) %>% 
+            pivot_longer(cols = c(-leaid, -ncessch_num), names_to = "race", values_to = "n") %>% 
+            mutual_within("race", "ncessch_num", weight = "n", within = "leaid", wide = TRUE) %>% 
+            transmute(leaid = leaid, district_H = H) %>% 
+            mutate(year = .y))
+
+# Non-white isolation
+white_isolation <-
+  s_dat %>% 
+  group_split(year) %>% 
+  map_df(~ .x %>%   
+           select(leaid, year, ncessch_num, white, non_white, total) %>%
+           group_by(leaid) %>% 
+           mutate(total_non_white = sum(non_white, na.rm = TRUE), 
+                  total_white = sum(white, na.rm = TRUE), 
+                  total_district = sum(total, na.rm = TRUE))  %>% 
+           mutate(isolation = (white/total_white)*(white/total)) %>% 
+           group_by(leaid, year) %>% 
+           summarize(isolation = sum(isolation, na.rm = TRUE)) %>% 
+           ungroup()) 
+
+white_charter_isolation <-
+  s_dat %>% 
+  group_split(year) %>% 
+  map_df(~ .x %>% 
+           filter(charter == 1) %>% 
+           select(leaid, year, ncessch_num, white, non_white, total) %>%
+           group_by(leaid) %>% 
+           mutate(total_non_white = sum(non_white, na.rm = TRUE), 
+                  total_white = sum(white, na.rm = TRUE), 
+                  total_district = sum(total, na.rm = TRUE))  %>% 
+           mutate(charter_isolation = (white/total_white)*(white/total)) %>% 
+           group_by(leaid, year) %>% 
+           summarize(charter_isolation = sum(charter_isolation, na.rm = TRUE)) %>% 
+           ungroup()) 
+
+# White exposure
+white_exposure <-
+  s_dat %>% 
+  group_split(year) %>% 
+  map_df(~ .x %>%   
+           select(leaid, year, ncessch_num, white, non_white, total) %>%
+           group_by(leaid) %>% 
+           mutate(total_non_white = sum(non_white, na.rm = TRUE), 
+                  total_white = sum(white, na.rm = TRUE), 
+                  total_district = sum(total, na.rm = TRUE))  %>% 
+           mutate(exposure = (white/total_white)*(non_white/total)) %>% 
+           group_by(leaid, year) %>% 
+           summarize(exposure = sum(exposure, na.rm = TRUE)) %>% 
+           ungroup()) 
+
 charter_dat <-
   left_join(charter_dat, charter_seg) %>% 
-  left_join(tps_seg)
+  left_join(tps_seg) %>% 
+  left_join(district_seg) %>% 
+  left_join(white_isolation) %>% 
+  left_join(white_charter_isolation)
 
 # Slice up the dataset
 charter_dat_non_urban <-
@@ -432,8 +423,7 @@ charter_non_affluent2 <-
   charter_dat %>% 
   filter(!leaid %in% charter_affluent2$leaid)
 
-rm(list = ls()[str_detect(ls(), "d_")][-2])
-rm(list = ls()[str_detect(ls(), "s_")])
+rm(list = ls()[!str_detect(ls(), "charter_|d_dat|s_dat|shapefile")])
 
 save.image("ca_threat_analysis.RData")
 
