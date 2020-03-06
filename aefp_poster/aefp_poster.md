@@ -20,7 +20,7 @@ bibliography: packages.bib
 
 # Overview
 
-While school choice policies are now ubiqitous are often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation [@bifulcoSchoolChoiceRacial2007; @davisSchoolChoiceSegregation2014; @frankenbergNotJustUrban2012; @kotokSchoolChoiceRacial2017]. More specifically, white families may use charters to exit from racially diversifying schools to maintain status hierarchies [@renzulliSchoolChoiceCharter2005]. Using a group threat/status anxiety framework [@boboPerceptionsRacialGroup1996; @quillianPrejudiceResponsePerceived1995], I hypothesize that exposure to increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal exposure, where racial diversification occurs in neighboring school districts, and direct exposure, where racial diversification occurs within local traditional public schools. 
+While school choice policies are now ubiqitous are often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation [@davisSchoolChoiceSegregation2014; rodaSchoolChoicePolicies2013]. More specifically, white families may use charters to exit from racially diversifying schools to maintain status hierarchies [@renzulliSchoolChoiceCharter2005]. Using a group threat/status anxiety framework [@boboPerceptionsRacialGroup1996], I hypothesize that exposure to increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal exposure, where racial diversification occurs in neighboring school districts, and direct exposure, where racial diversification occurs within local traditional public schools. 
 
 I find evidence that: 
 
@@ -44,7 +44,7 @@ Charter schools in California:
 
 **Measures**
 
-1. _Proximal status threat_ [@andrewsGroupThreatPolicy2015; @cunninghamContextsMobilizationSpatial2007]
+1. _Proximal status threat_ [@andrewsGroupThreatPolicy2015]
 $$ProxThreat_{ij} = \theta_{ij} * \gamma_{ij}$$
 where $\theta_{ij} = \frac{White_{ij}}{Total_{ij}}$ and $\gamma_{ij} = \frac{\sum_1^k Blk_{kj}, Hisp_{kj}}{\sum_1^k Total_{kj}}$
 
@@ -70,12 +70,13 @@ _Second stage_:
 $$WhiteIsolation_{ij} = \beta_1\hat{\phi} + X_{ij}\beta + \alpha_i + \gamma_j + \epsilon_{ij}$$
 
 
-# Visualizing district-level change
+# Charter School Expansion and Enrollment
 
+<img src="aefp_poster_files/figure-html/map1-1.png" width="95%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/map1-2.png" width="95%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/map1-3.png" width="95%" style="display: block; margin: auto;" />
 
 # Descriptive Analysis
 
-<img src="aefp_poster_files/figure-html/unnamed-chunk-1-1.png" width="100%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/unnamed-chunk-1-2.png" width="100%" style="display: block; margin: auto;" />
+<img src="aefp_poster_files/figure-html/unnamed-chunk-1-1.png" width="90%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/unnamed-chunk-1-2.png" width="90%" style="display: block; margin: auto;" />
 
 
 # Preliminary Results
