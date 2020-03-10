@@ -20,16 +20,16 @@ bibliography: packages.bib
 
 # Overview
 
-While school choice policies are now ubiqitous are often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation [@davisSchoolChoiceSegregation2014; rodaSchoolChoicePolicies2013]. More specifically, white families may use charters to exit from racially diversifying schools to maintain status hierarchies [@renzulliSchoolChoiceCharter2005]. Using a group threat/status anxiety framework [@boboPerceptionsRacialGroup1996], I hypothesize that exposure to increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal exposure, where racial diversification occurs in neighboring school districts, and direct exposure, where racial diversification occurs within local traditional public schools. 
+While school choice policies are now ubiqitous and often presented as a strategy for addressing persistent racial disparities education, there is concern that such policies may maintain or increases such disparities due to resource hoarding by advantaged families or through increased racial segregation [@davisSchoolChoiceSegregation2014; @rodaSchoolChoicePolicies2013]. More specifically, white families may use charters to exit from racially diversifying schools to maintain status hierarchies [@renzulliSchoolChoiceCharter2005]. Using a group threat/status anxiety framework [@boboPerceptionsRacialGroup1996], I hypothesize that exposure to increased racial diversification may induce white families to enroll their children in charter schools. I distinguish between proximal exposure, where racial diversification occurs in neighboring school districts, and direct exposure, where racial diversification occurs within local traditional public schools. 
 
 I find evidence that: 
 
-1. both proximal and direct exposure are associated with both **increased foundings of charter schools** and with **white enrollment in charter schools**;  
+1. both proximal and direct exposure are associated with both **increased foundings of charter schools** and with **increasd white enrollment in charter schools**;  
 2. this is concentrated in **non-urban areas**; and  
 3. threat-induced white enrollment is associated with **increased racial segregation**.  
 
 # Data
-Panel of California school district data from 2000-2015 (n = 16693 district-by-year observations; 1111 unique districts)
+Panel of California school district data from 2000-2015 (n = 12,603 district-by-year observations; 990 unique districts)
 
 Sources: The Common Core of Data; Small Area Income and Poverty Estimates (both accessed via the Urban Institutes API); NCES EDGE database
 
@@ -72,11 +72,11 @@ $$WhiteIsolation_{ij} = \beta_1\hat{\phi} + X_{ij}\beta + \alpha_i + \gamma_j + 
 
 # Charter School Expansion and Enrollment
 
-<img src="aefp_poster_files/figure-html/map1-1.png" width="95%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/map1-2.png" width="95%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/map1-3.png" width="95%" style="display: block; margin: auto;" />
+<img src="aefp_poster_files/figure-html/map1-1.png" width="97%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/map1-2.png" width="97%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/map1-3.png" width="97%" style="display: block; margin: auto;" />
 
 # Descriptive Analysis
 
-<img src="aefp_poster_files/figure-html/unnamed-chunk-1-1.png" width="90%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/unnamed-chunk-1-2.png" width="90%" style="display: block; margin: auto;" />
+<img src="aefp_poster_files/figure-html/unnamed-chunk-1-1.png" width="90%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/unnamed-chunk-1-2.png" width="90%" style="display: block; margin: auto;" /><img src="aefp_poster_files/figure-html/unnamed-chunk-1-3.png" width="90%" style="display: block; margin: auto;" />
 
 
 # Preliminary Results

@@ -6,8 +6,8 @@ library(huxtable)
 library(segregation)
 
 # 1) Load the data ----
-load("ca_school_data.RData")
-load("ca_district_shapefiles.RData")
+load("focal_school_data.RData")
+load("focal_district_shapefiles.RData")
 
 ## 1) Get California data ----
 d_dat <- 
@@ -16,8 +16,6 @@ d_dat <-
          -cbsa:-highest_grade_offered,
          -teachers_prek_fte:-school_counselors_fte,
          -district_id, -district_name) %>% 
-  # Drop county offices observations
-  filter(!str_detect(leaid, "^69")) %>% 
   mutate(share_swd = spec_ed_students/enrollment,
          share_ell = english_language_learners/enrollment,
          share_migrant = migrant_students/enrollment)
@@ -27,18 +25,13 @@ s_t_ratio <-
   filter(charter == 0) %>% 
   group_by(leaid, year) %>% 
   summarize_at(vars(teachers_fte, enrollment), sum, na.rm = TRUE) %>% 
-  group_by(leaid) %>% 
-  mutate(teachers_fte = ifelse(year == 2010 & teachers_fte == 0, lag(teachers_fte), teachers_fte)) %>% 
   ungroup() %>% 
-  mutate(s_t_ratio = enrollment/teachers_fte) %>% 
-  select(leaid, year, s_t_ratio) %>% 
-  mutate(s_t_ratio = ifelse(is.infinite(s_t_ratio), NA, s_t_ratio))
+  mutate(s_t_ratio = teachers_fte/enrollment) %>% 
+  select(leaid, year, s_t_ratio)
 
 share_title_i <- 
   s_dat %>% 
-  group_by(ncessch_num) %>% 
-  fill(title_i_eligible, .direction = "downup") %>% 
-  ungroup() %>% 
+  filter(!is.na(title_i_eligible)) %>% 
   count(leaid, year, title_i_eligible) %>% 
   complete(title_i_eligible, nesting(leaid, year), fill = list(n = 0)) %>% 
   arrange(leaid, year, title_i_eligible) %>% 
@@ -50,9 +43,7 @@ share_title_i <-
 
 share_magnet <- 
   s_dat %>% 
-  group_by(ncessch_num) %>% 
-  fill(magnet, .direction = "downup") %>% 
-  ungroup() %>% 
+  filter(!is.na(magnet)) %>% 
   count(leaid, year, magnet) %>% 
   complete(magnet, nesting(leaid, year), fill = list(n = 0)) %>% 
   arrange(leaid, year, magnet) %>% 
@@ -190,7 +181,7 @@ district_borders_even <-
           )
     )
   )
-district_borders_odd[[1]] <- NULL
+
 district_borders_even[[9]] <- NULL
 
 district_borders <-
@@ -432,8 +423,6 @@ charter_non_affluent2 <-
   charter_dat %>% 
   filter(!leaid %in% charter_affluent2$leaid)
 
-
-# Clean up and save data ----
 rm(list = ls()[!str_detect(ls(), "charter_|d_dat|s_dat|shapefile")])
 
 save.image("ca_threat_analysis.RData")

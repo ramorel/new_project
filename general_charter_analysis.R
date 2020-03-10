@@ -6,8 +6,11 @@ library(huxtable)
 library(segregation)
 
 # 1) Load the data ----
-load("ca_school_data.RData")
-load("ca_district_shapefiles.RData")
+load("focal_state_school_data.RData")
+load("focal_district_shapefiles.RData")
+
+state <- "NC"
+
 
 ## 1) Get California data ----
 d_dat <- 
@@ -16,8 +19,6 @@ d_dat <-
          -cbsa:-highest_grade_offered,
          -teachers_prek_fte:-school_counselors_fte,
          -district_id, -district_name) %>% 
-  # Drop county offices observations
-  filter(!str_detect(leaid, "^69")) %>% 
   mutate(share_swd = spec_ed_students/enrollment,
          share_ell = english_language_learners/enrollment,
          share_migrant = migrant_students/enrollment)
@@ -27,18 +28,14 @@ s_t_ratio <-
   filter(charter == 0) %>% 
   group_by(leaid, year) %>% 
   summarize_at(vars(teachers_fte, enrollment), sum, na.rm = TRUE) %>% 
-  group_by(leaid) %>% 
-  mutate(teachers_fte = ifelse(year == 2010 & teachers_fte == 0, lag(teachers_fte), teachers_fte)) %>% 
   ungroup() %>% 
-  mutate(s_t_ratio = enrollment/teachers_fte) %>% 
+  mutate(s_t_ratio = teachers_fte/enrollment) %>% 
   select(leaid, year, s_t_ratio) %>% 
   mutate(s_t_ratio = ifelse(is.infinite(s_t_ratio), NA, s_t_ratio))
 
 share_title_i <- 
   s_dat %>% 
-  group_by(ncessch_num) %>% 
-  fill(title_i_eligible, .direction = "downup") %>% 
-  ungroup() %>% 
+  filter(!is.na(title_i_eligible)) %>% 
   count(leaid, year, title_i_eligible) %>% 
   complete(title_i_eligible, nesting(leaid, year), fill = list(n = 0)) %>% 
   arrange(leaid, year, title_i_eligible) %>% 
@@ -50,9 +47,7 @@ share_title_i <-
 
 share_magnet <- 
   s_dat %>% 
-  group_by(ncessch_num) %>% 
-  fill(magnet, .direction = "downup") %>% 
-  ungroup() %>% 
+  filter(!is.na(magnet)) %>% 
   count(leaid, year, magnet) %>% 
   complete(magnet, nesting(leaid, year), fill = list(n = 0)) %>% 
   arrange(leaid, year, magnet) %>% 
@@ -190,7 +185,7 @@ district_borders_even <-
           )
     )
   )
-district_borders_odd[[1]] <- NULL
+
 district_borders_even[[9]] <- NULL
 
 district_borders <-
@@ -211,6 +206,52 @@ d_dat <-
   inner_join(district_borders)
 
 ## 4) Charter information ----
+
+# Locate charters within districts
+charters <- s_dat %>% 
+  filter(charter == 1) %>% 
+  select(ncessch_num, year, latitude, longitude) %>% 
+  filter(!is.na(latitude)) %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4269)
+
+shapefiles <- map(shapefiles, ~ st_set_crs(.x, 4269))
+shps <- reduce(shapefiles, rbind)
+
+idx <- map(unique(shps$year)[-1], 
+    ~ charters %>% 
+      filter(year == .x) %>% 
+      st_within(shps %>% filter(year == .x)) %>% 
+      unlist())
+
+
+cht_leaids <-
+  map2(unique(shps$year)[-1],
+       1:8, ~ shps %>% 
+         filter(year == .x) %>% 
+         .[unlist(idx[[.y]]), ] %>% 
+         pull(geoid))
+
+charters <- 
+  charters %>% 
+  as_tibble() %>% 
+  select(-geometry) %>% 
+  filter(year %in% unique(shps$year)[-1]) %>% 
+  group_split(year) %>% 
+  map2(cht_leaids, ~ .x %>% mutate(geoid = .y)) %>% 
+  bind_rows()
+
+s_dat <- 
+  s_dat %>% 
+  left_join(charters) %>% 
+  group_by(ncessch_num) %>% 
+  fill(geoid, .direction = "updown") %>% 
+  ungroup()
+
+s_dat <- 
+  s_dat %>% 
+  mutate(leaid = ifelse(charter == 1, geoid, leaid)) %>% 
+  select(-geoid)
+
 # number of charters per district per year
 charter_dat <-
   s_dat %>%
@@ -414,7 +455,7 @@ charter_affluent <-
 
 median_income <- 
   map(c("school district (elementary)", "school district (unified)", "school district (secondary)"),
-      ~ get_acs(geography = .x, variables = "B19013_001", year = 2010, state = "CA", geometry = FALSE)) %>% 
+      ~ get_acs(geography = .x, variables = "B19013_001", year = 2010, state = state, geometry = FALSE)) %>% 
   bind_rows() %>% 
   select(GEOID, estimate) %>% 
   mutate(GEOID = as.numeric(GEOID))
@@ -432,11 +473,9 @@ charter_non_affluent2 <-
   charter_dat %>% 
   filter(!leaid %in% charter_affluent2$leaid)
 
-
-# Clean up and save data ----
 rm(list = ls()[!str_detect(ls(), "charter_|d_dat|s_dat|shapefile")])
 
-save.image("ca_threat_analysis.RData")
+save.image("threat_analysis.RData")
 
 
 # Models 1: Share of charters in a district ----

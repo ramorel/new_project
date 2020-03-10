@@ -17,7 +17,7 @@
 library(tidyverse)
 library(educationdata)
 
-fips_to_get <- 6
+fips_to_get <- 37
 
 # 1) School-level data for California Schools ----
 # Directory data
@@ -175,7 +175,7 @@ d_pov <-
     source = "saipe",
     filters = list(
       year = 2000:2015,
-      fips = 6
+      fips = fips_to_get
     )
   ) %>%
   mutate(leaid = as.numeric(leaid)) %>%
@@ -255,4 +255,4 @@ d_dat <-
   d_dat %>% 
   mutate(non_white_prop = round(non_white / total, 3))
 
-save.image("ca_school_data.RData")
+save.image("focal_state_school_data.RData")
